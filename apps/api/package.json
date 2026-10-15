@@ -1,0 +1,40 @@
+{
+  "name": "@iptv/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "test": "vitest run",
+    "test:db": "tsx src/scripts/test-db.ts",
+    "seed:kanal": "tsx src/scripts/seed-kanallar.ts",
+    "m3u:iceaktar": "tsx src/scripts/m3u-iceaktar.ts",
+    "seed:paketler": "tsx src/scripts/seed-paketler.ts",
+    "yonetici:olustur": "tsx src/scripts/yonetici-olustur.ts"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "helmet": "^8.0.0",
+    "cors": "^2.8.5",
+    "cookie-parser": "^1.4.7",
+    "express-rate-limit": "^7.4.1",
+    "mongoose": "^8.8.0",
+    "zod": "^3.23.8",
+    "bcryptjs": "^2.4.3",
+    "nodemailer": "^6.9.16"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17",
+    "@types/cookie-parser": "^1.4.7",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/nodemailer": "^6.4.16",
+    "@types/node": "^22.8.6"
+  }
+}

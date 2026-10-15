@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "IPTV",
+    "slug": "iptv-mobile",
+    "version": "0.1.0",
+    "orientation": "default",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#05060a",
+    "scheme": "iptv",
+    "platforms": ["ios", "android"],
+    "android": { "package": "com.iptv.mobile" },
+    "ios": { "bundleIdentifier": "com.iptv.mobile" },
+    "extra": { "apiBase": "http://192.168.1.10:4000" }
+  }
+}
