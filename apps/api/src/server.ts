@@ -10,6 +10,7 @@ import paketRoutes from "./routes/paketler.js";
 import destekRoutes from "./routes/destek.js";
 import hesapRoutes from "./routes/hesap.js";
 import yonetimRoutes from "./routes/yonetim.js";
+import telefonRoutes from "./routes/telefon.js";
 import { requireAuth, requireRole } from "./middleware/auth.js";
 import { HttpHata } from "./lib/hata.js";
 
@@ -30,6 +31,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/kanallar", kanalRoutes);
 app.use("/api/paketler", paketRoutes);
 app.use("/api/destek", destekRoutes);
+app.use("/api/telefon", telefonRoutes);
 app.use("/api/hesap", hesapRoutes);
 app.use("/api/yonetim", requireAuth, requireRole("yonetici"), yonetimRoutes);
 

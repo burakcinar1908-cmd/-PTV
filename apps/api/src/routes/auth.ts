@@ -7,7 +7,7 @@ import { hashle, karsilastir } from "../lib/sifre.js";
 import { rastgeleToken, tokenOzeti } from "../lib/tokens.js";
 import { mailGonder } from "../services/mail.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
-import { OTURUM_COOKIE, requireAuth } from "../middleware/auth.js";
+import { OTURUM_COOKIE, oturumTokeni, requireAuth } from "../middleware/auth.js";
 import { girisLimiti } from "../middleware/rateLimit.js";
 import {
   epostaSemasi,
@@ -79,11 +79,15 @@ router.post(
     });
 
     const link = `${env.WEB_ORIGIN}/dogrula?token=${dogrulamaToken}`;
-    await mailGonder(
-      email,
-      "E-posta adresinizi doğrulayın",
-      `Merhaba ${ad},\n\nHesabınızı doğrulamak için bu bağlantıyı açın (24 saat geçerli):\n${link}`
-    );
+    try {
+      await mailGonder(
+        email,
+        "E-posta adresinizi doğrulayın",
+        `Merhaba ${ad},\n\nHesabınızı doğrulamak için bu bağlantıyı açın (24 saat geçerli):\n${link}`
+      );
+    } catch {
+      // Kayıt kaydedildi. Mail gitmediyse kullanıcı "doğrulama e-postasını tekrar gönder" ile yeniden isteyebilir.
+    }
 
     res.status(201).json({
       mesaj: "Kayıt başarılı. Lütfen e-posta adresinize gönderilen bağlantıyla hesabınızı doğrulayın.",
@@ -109,6 +113,36 @@ router.post(
     await user.save();
 
     res.json({ mesaj: "E-posta adresiniz doğrulandı. Artık giriş yapabilirsiniz." });
+  })
+);
+
+router.post(
+  "/dogrulama-tekrar",
+  girisLimiti,
+  asyncHandler(async (req, res) => {
+    const { email } = dogrula(epostaSemasi, req.body);
+    const user = await User.findOne({ email });
+
+    // Hesabın var olup olmadığını sızdırmamak için yanıt her durumda aynı.
+    if (user && !user.emailDogrulandi) {
+      const token = rastgeleToken();
+      user.dogrulamaTokenHash = tokenOzeti(token);
+      user.dogrulamaSonTarih = new Date(Date.now() + DOGRULAMA_SURESI_MS);
+      await user.save();
+
+      const link = `${env.WEB_ORIGIN}/dogrula?token=${token}`;
+      try {
+        await mailGonder(
+          email,
+          "E-posta adresinizi doğrulayın",
+          `Merhaba ${user.ad},\n\nHesabınızı doğrulamak için bu bağlantıyı açın (24 saat geçerli):\n${link}`
+        );
+      } catch {
+        throw new HttpHata(503, "E-posta şu an gönderilemedi. Biraz sonra tekrar deneyin.");
+      }
+    }
+
+    res.json({ mesaj: "Bu e-posta ile bir hesap varsa doğrulama bağlantısı gönderildi." });
   })
 );
 
@@ -153,7 +187,8 @@ router.post(
 router.post(
   "/cikis",
   asyncHandler(async (req, res) => {
-    const token = req.cookies?.[OTURUM_COOKIE];
+    // Mobil (Bearer) ve web (çerez) oturumları sunucuda da kapatılır.
+    const token = oturumTokeni(req);
     if (token) await Session.deleteOne({ tokenHash: tokenOzeti(token) });
     res.clearCookie(OTURUM_COOKIE, { path: "/" });
     res.json({ mesaj: "Çıkış yapıldı." });

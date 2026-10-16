@@ -10,6 +10,6 @@
     "platforms": ["ios", "android"],
     "android": { "package": "com.iptv.mobile" },
     "ios": { "bundleIdentifier": "com.iptv.mobile" },
-    "extra": { "apiBase": "http://192.168.1.10:4000" }
+    "extra": { "apiBase": "https://iptv-api-erk5.onrender.com" }
   }
 }

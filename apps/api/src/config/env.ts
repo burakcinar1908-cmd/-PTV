@@ -15,6 +15,12 @@ const schema = z.object({
   SMTP_PORT: z.coerce.number().default(587),
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
+  RESEND_API_KEY: z.string().optional(),
+  WHATSAPP_TOKEN: z.string().optional(),
+  WHATSAPP_PHONE_ID: z.string().optional(),
+  WHATSAPP_OTP_TEMPLATE: z.string().default("dogrulama_kodu"),
+  WHATSAPP_OTP_LANG: z.string().default("tr"),
+  WHATSAPP_OTP_BUTTON: z.enum(["true", "false"]).default("false"),
   DEMO_ODEME: z.enum(["true", "false"]).default("true"),
   MAIL_FROM: z.string().default("IPTV Platform <no-reply@ornek.com>"),
 });
