@@ -420,7 +420,8 @@ router.post(
       try {
         await mailGonder(mesaj.email, "Destek talebinize yanıt", veri.yanit);
         ek = " E-posta gönderildi.";
-      } catch {
+      } catch (err) {
+        console.error("[mail] destek yanıtı gönderilemedi:", err instanceof Error ? err.message : err);
         ek = " E-posta gönderilemedi.";
       }
     }

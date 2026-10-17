@@ -8,6 +8,7 @@ const destekSchema = new Schema(
     durum: { type: String, enum: ["yeni", "okundu"], default: "yeni", index: true },
     yanit: { type: String, trim: true, maxlength: 2000, default: "" },
     yanitTarih: { type: Date },
+    takipKodu: { type: String, index: true, default: "" },
   },
   { timestamps: true }
 );

@@ -83,9 +83,10 @@ router.post(
       await mailGonder(
         email,
         "E-posta adresinizi doğrulayın",
-        `Merhaba ${ad},\n\nHesabınızı doğrulamak için bu bağlantıyı açın (24 saat geçerli):\n${link}`
+        `Merhaba ${ad},\n\nHesabınızı doğrulamak için bu bağlantıyı açın (24 saat geçerli):\n${link}\n\nMobil uygulamada bu kodu yapıştırabilirsiniz:\n${dogrulamaToken}`
       );
-    } catch {
+    } catch (err) {
+      console.error("[mail] kayıt doğrulama maili gönderilemedi:", err instanceof Error ? err.message : err);
       // Kayıt kaydedildi. Mail gitmediyse kullanıcı "doğrulama e-postasını tekrar gönder" ile yeniden isteyebilir.
     }
 
@@ -135,9 +136,10 @@ router.post(
         await mailGonder(
           email,
           "E-posta adresinizi doğrulayın",
-          `Merhaba ${user.ad},\n\nHesabınızı doğrulamak için bu bağlantıyı açın (24 saat geçerli):\n${link}`
+          `Merhaba ${user.ad},\n\nHesabınızı doğrulamak için bu bağlantıyı açın (24 saat geçerli):\n${link}\n\nMobil uygulamada bu kodu yapıştırabilirsiniz:\n${token}`
         );
-      } catch {
+      } catch (err) {
+        console.error("[mail] doğrulama tekrar maili gönderilemedi:", err instanceof Error ? err.message : err);
         throw new HttpHata(503, "E-posta şu an gönderilemedi. Biraz sonra tekrar deneyin.");
       }
     }

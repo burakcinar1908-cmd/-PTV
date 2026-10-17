@@ -73,7 +73,7 @@ export default function KanalKatalogu() {
       <h1 className="text-4xl font-semibold">Kanallar</h1>
       <p className="mt-2 text-slate-400">Kategoriye göre göz atın veya kanal adıyla arayın.</p>
 
-      <div className="mt-8 space-y-4">
+      <div className="sticky top-14 z-30 -mx-6 mt-8 space-y-3 border-b border-white/5 bg-[#05060a]/85 px-6 py-4 backdrop-blur-md">
         <div className="relative">
           <svg aria-hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500">
             <circle cx="11" cy="11" r="7" />
@@ -98,7 +98,7 @@ export default function KanalKatalogu() {
           )}
         </div>
 
-        <div className="flex snap-x gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex snap-x gap-2 overflow-x-auto pb-1 [scrollbar-width:none] md:flex-wrap md:overflow-visible [&::-webkit-scrollbar]:hidden">
           {[""].concat(kategoriler).map((k) => {
             const aktif = kategori === k;
             return (
@@ -106,9 +106,9 @@ export default function KanalKatalogu() {
                 key={k || "tumu"}
                 type="button"
                 onClick={() => setKategori(k)}
-                className={`shrink-0 snap-start rounded-full px-4 py-1.5 text-sm transition ${
+                className={`shrink-0 snap-start rounded-full px-4 py-2 text-sm transition ${
                   aktif
-                    ? "bg-cyan-400 font-medium text-slate-950"
+                    ? "bg-cyan-400 font-medium text-slate-950 shadow-[0_0_20px_-4px_rgba(34,211,238,0.6)]"
                     : "bg-white/5 text-slate-300 ring-1 ring-white/10 hover:bg-white/10 hover:text-slate-100"
                 }`}
               >
