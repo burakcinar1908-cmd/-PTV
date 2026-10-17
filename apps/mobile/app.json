@@ -7,9 +7,24 @@
     "userInterfaceStyle": "dark",
     "backgroundColor": "#05060a",
     "scheme": "iptv",
-    "platforms": ["ios", "android"],
-    "android": { "package": "com.iptv.mobile" },
-    "ios": { "bundleIdentifier": "com.iptv.mobile" },
-    "extra": { "apiBase": "https://iptv-api-erk5.onrender.com" }
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "android": {
+      "package": "com.iptv.mobile"
+    },
+    "ios": {
+      "bundleIdentifier": "com.iptv.mobile"
+    },
+    "extra": {
+      "apiBase": "https://iptv-api-erk5.onrender.com"
+    },
+    "plugins": [
+      "expo-asset",
+      "expo-secure-store",
+      "expo-status-bar",
+      "expo-video"
+    ]
   }
 }
