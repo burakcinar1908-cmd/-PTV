@@ -176,8 +176,14 @@ export default function Oynatici({ id }: { id: string }) {
 
         hls.on(Hls.Events.ERROR, (_olay, veri) => {
           if (!veri.fatal || !hls) return;
+          // Liste HLS değil (ham MPEG-TS vb.): boşuna yeniden denemeden doğrudan mpegts.js'e geç.
+          if (veri.details === Hls.ErrorDetails.MANIFEST_PARSING_ERROR) {
+            mpegtsDene();
+            return;
+          }
           if (yenidenDeneme >= EN_FAZLA_YENIDEN_DENEME) {
-            return hataGoster("Yayın kaynağı yanıt vermiyor. Lütfen daha sonra tekrar deneyin.");
+            mpegtsDene();
+            return;
           }
           yenidenDeneme++;
           if (veri.type === Hls.ErrorTypes.NETWORK_ERROR) {

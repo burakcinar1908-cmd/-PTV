@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/lib/api";
 import { sonIzlenenleriOku, type Kanal } from "@/lib/kanal";
 import KanalKarti from "./KanalKarti";
@@ -8,10 +8,40 @@ import KilitAc from "./KilitAc";
 
 type Liste = { kanallar: Kanal[]; kategoriler: string[]; paketGerekli: boolean; kilitliKategoriler: string[] };
 
+// "AR | BAHRAIN", "TR ✦ SPOR" gibi adlarda baştaki ülke/grup kodunu ayırır.
+const AYIRAC = /^\s*([^\s|✦✪★•:–-]{1,10})\s*(?:\||✦|✪|★|•|:|–|-)\s*(.*)$/u;
+
+function grupAyir(ad: string): { grup: string; alt: string } {
+  const e = AYIRAC.exec(ad);
+  if (!e) return { grup: "Diğer", alt: ad.trim() };
+  return { grup: e[1].toLocaleUpperCase("tr"), alt: e[2].trim() || ad.trim() };
+}
+
+const kaydirmaSatiri =
+  "flex gap-2 overflow-x-auto pb-2 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.2)_transparent]";
+
+function Cip({ aktif, onClick, children }: { aktif: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm transition ${
+        aktif
+          ? "bg-cyan-400 font-medium text-slate-950 shadow-[0_0_20px_-4px_rgba(34,211,238,0.6)]"
+          : "bg-white/5 text-slate-300 ring-1 ring-white/10 hover:bg-white/10 hover:text-slate-100"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
 export default function KanalKatalogu() {
   const [kategoriler, setKategoriler] = useState<string[]>([]);
   const [kanallar, setKanallar] = useState<Kanal[]>([]);
   const [kategori, setKategori] = useState("");
+  const [grup, setGrup] = useState("");
+  const kategorilerRef = useRef<string[]>([]);
   const [arama, setArama] = useState("");
   const [yukleniyor, setYukleniyor] = useState(true);
   const [hata, setHata] = useState<string | null>(null);
@@ -34,7 +64,10 @@ export default function KanalKatalogu() {
     const zamanlayici = setTimeout(async () => {
       setYukleniyor(true);
       const params = new URLSearchParams();
-      if (kategori) params.set("kategori", kategori);
+      if (kategori) params.append("kategori", kategori);
+      else if (grup) {
+        for (const k of kategorilerRef.current) if (grupAyir(k).grup === grup) params.append("kategori", k);
+      }
       if (arama.trim()) params.set("q", arama.trim());
       const sonuc = await api<Liste>(`/kanallar?${params.toString()}`, undefined, "GET");
       setYukleniyor(false);
@@ -42,6 +75,7 @@ export default function KanalKatalogu() {
         setKanallar(sonuc.veri.kanallar);
         setPaketGerekli(sonuc.veri.paketGerekli);
         setKilitliKategoriler(sonuc.veri.kilitliKategoriler ?? []);
+        kategorilerRef.current = sonuc.veri.kategoriler;
         setKategoriler(sonuc.veri.kategoriler);
         setHata(null);
       } else {
@@ -49,7 +83,25 @@ export default function KanalKatalogu() {
       }
     }, 250);
     return () => clearTimeout(zamanlayici);
-  }, [kategori, arama, yenile]);
+  }, [kategori, grup, arama, yenile]);
+
+  const gruplar = useMemo(() => {
+    const harita = new Map<string, string[]>();
+    for (const k of kategoriler) {
+      const { grup: g } = grupAyir(k);
+      harita.set(g, [...(harita.get(g) ?? []), k]);
+    }
+    const adlar = [...harita.keys()].sort((a, b) => {
+      if (a === "TR") return -1;
+      if (b === "TR") return 1;
+      if (a === "Diğer") return 1;
+      if (b === "Diğer") return -1;
+      return a.localeCompare(b, "tr");
+    });
+    return { harita, adlar };
+  }, [kategoriler]);
+
+  const altKategoriler = grup ? (gruplar.harita.get(grup) ?? []) : [];
 
   async function favoriDegistir(kanalId: string) {
     if (!favoriler) {
@@ -73,7 +125,7 @@ export default function KanalKatalogu() {
       <h1 className="text-4xl font-semibold">Kanallar</h1>
       <p className="mt-2 text-slate-400">Kategoriye göre göz atın veya kanal adıyla arayın.</p>
 
-      <div className="sticky top-14 z-30 -mx-6 mt-8 space-y-3 border-b border-white/5 bg-[#05060a]/85 px-6 py-4 backdrop-blur-md">
+      <div className="mt-8 space-y-3">
         <div className="relative">
           <svg aria-hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500">
             <circle cx="11" cy="11" r="7" />
@@ -98,25 +150,31 @@ export default function KanalKatalogu() {
           )}
         </div>
 
-        <div className="flex snap-x gap-2 overflow-x-auto pb-1 [scrollbar-width:none] md:flex-wrap md:overflow-visible [&::-webkit-scrollbar]:hidden">
-          {[""].concat(kategoriler).map((k) => {
-            const aktif = kategori === k;
-            return (
-              <button
-                key={k || "tumu"}
-                type="button"
-                onClick={() => setKategori(k)}
-                className={`shrink-0 snap-start rounded-full px-4 py-2 text-sm transition ${
-                  aktif
-                    ? "bg-cyan-400 font-medium text-slate-950 shadow-[0_0_20px_-4px_rgba(34,211,238,0.6)]"
-                    : "bg-white/5 text-slate-300 ring-1 ring-white/10 hover:bg-white/10 hover:text-slate-100"
-                }`}
-              >
-                {k || "Tümü"}
-              </button>
-            );
-          })}
+        <div>
+          <p className="mb-2 text-xs uppercase tracking-widest text-slate-500">Ülke / Grup</p>
+          <div className={kaydirmaSatiri}>
+            <Cip aktif={!grup} onClick={() => { setGrup(""); setKategori(""); }}>Tümü</Cip>
+            {gruplar.adlar.map((g) => (
+              <Cip key={g} aktif={grup === g} onClick={() => { setGrup(g); setKategori(""); }}>
+                {g} <span className="ml-1 text-xs opacity-60">{gruplar.harita.get(g)?.length}</span>
+              </Cip>
+            ))}
+          </div>
         </div>
+
+        {grup && altKategoriler.length > 0 && (
+          <div>
+            <p className="mb-2 text-xs uppercase tracking-widest text-slate-500">{grup} kategorileri</p>
+            <div className={kaydirmaSatiri}>
+              <Cip aktif={!kategori} onClick={() => setKategori("")}>Hepsi</Cip>
+              {altKategoriler.map((k) => (
+                <Cip key={k} aktif={kategori === k} onClick={() => setKategori(k)}>
+                  {grupAyir(k).alt}
+                </Cip>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {bilgi && (
@@ -125,7 +183,7 @@ export default function KanalKatalogu() {
         </p>
       )}
 
-      {sonIzlenen.length > 0 && !arama && !kategori && (
+      {sonIzlenen.length > 0 && !arama && !kategori && !grup && (
         <section className="mt-10">
           <h2 className="mb-4 text-lg font-medium text-slate-300">Son izlenenler</h2>
           <div className="flex gap-3 overflow-x-auto pb-2">
@@ -153,7 +211,7 @@ export default function KanalKatalogu() {
       <section className="mt-10">
         {!yukleniyor && !hata && kanallar.length > 0 && (
           <p className="mb-4 text-xs uppercase tracking-widest text-slate-500">
-            {kanallar.length} kanal{kategori ? ` · ${kategori}` : ""}
+            {kanallar.length} kanal{kategori ? ` · ${kategori}` : grup ? ` · ${grup}` : ""}
           </p>
         )}
         {hata && <p role="alert" className="rounded-xl border border-rose-400/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{hata}</p>}
