@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { api } from "@/lib/api";
 
-export default function KilitAc({ kategoriler, onAcildi }: { kategoriler: string[]; onAcildi: () => void }) {
+export default function KilitAc({ kategoriler, tumu = false, onAcildi }: { kategoriler: string[]; tumu?: boolean; onAcildi: () => void }) {
   const [pin, setPin] = useState("");
   const [mesaj, setMesaj] = useState<string | null>(null);
   const [islem, setIslem] = useState(false);
@@ -24,7 +24,11 @@ export default function KilitAc({ kategoriler, onAcildi }: { kategoriler: string
 
   return (
     <div className="mb-8 rounded-2xl border border-amber-400/30 bg-amber-500/5 p-5">
-      <p className="text-slate-100">Ebeveyn kilidi aktif: <span className="text-amber-200">{kategoriler.join(", ")}</span> kategorileri gizli.</p>
+      {tumu ? (
+        <p className="text-slate-100">Ebeveyn kilidi aktif: <span className="text-amber-200">tüm kanallar</span> gizli. Görmek için PIN girin.</p>
+      ) : (
+        <p className="text-slate-100">Ebeveyn kilidi aktif: <span className="text-amber-200">{kategoriler.join(", ")}</span> kategorileri gizli.</p>
+      )}
       <form onSubmit={gonder} className="mt-3 flex flex-wrap items-center gap-3">
         <input
           required

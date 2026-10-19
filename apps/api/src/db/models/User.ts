@@ -15,6 +15,7 @@ const userSchema = new Schema(
     kilitliYonelimi: { type: Date, select: false },
     ebeveynPinHash: { type: String, select: false },
     ebeveynKategoriler: { type: [String], default: [] },
+    ebeveynTumKanallar: { type: Boolean, default: false },
     dondurulduMu: { type: Boolean, default: false },
   },
   { timestamps: true }

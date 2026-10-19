@@ -3,7 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { api } from "@/lib/api";
 
-type Durum = { aktif: boolean; kategoriler: string[] };
+type Durum = { aktif: boolean; kategoriler: string[]; tumKanallar: boolean };
 
 const INPUT = "w-full rounded-lg border border-white/10 bg-slate-900 px-3 py-2 text-sm outline-none focus:border-cyan-300/60";
 const BUTON = "rounded-full bg-cyan-400 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-cyan-300 disabled:opacity-60";
@@ -15,6 +15,7 @@ export default function EbeveynKontrolu() {
   const [mevcutPin, setMevcutPin] = useState("");
   const [yeniPin, setYeniPin] = useState("");
   const [secilen, setSecilen] = useState<string[]>([]);
+  const [tumKanallar, setTumKanallar] = useState(false);
   const [bilgi, setBilgi] = useState<{ tur: "hata" | "basari"; metin: string } | null>(null);
   const [islem, setIslem] = useState(false);
 
@@ -26,6 +27,7 @@ export default function EbeveynKontrolu() {
     if (d.ok) {
       setDurum(d.veri);
       setSecilen(d.veri.kategoriler);
+      setTumKanallar(Boolean(d.veri.tumKanallar));
     }
     if (k.ok) setTumKategoriler(k.veri.kategoriler);
   }
@@ -46,6 +48,7 @@ export default function EbeveynKontrolu() {
       mevcutPin: durum?.aktif ? mevcutPin : undefined,
       yeniPin,
       kategoriler: secilen,
+      tumKanallar,
     }, "PUT");
     setIslem(false);
     if (sonuc.ok) {
@@ -75,7 +78,7 @@ export default function EbeveynKontrolu() {
     <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
       <h2 className="text-lg font-medium">Ebeveyn kontrolü</h2>
       <p className="mt-1 text-sm text-slate-400">
-        Seçtiğiniz kategoriler PIN girilmeden açılmaz. Kilit açıldığında 30 dakika boyunca açık kalır.
+        Seçtiğiniz kategoriler ya da isterseniz tüm kanallar PIN girilmeden görünmez. Kilit açıldığında 30 dakika boyunca açık kalır.
       </p>
 
       {bilgi && (
@@ -88,7 +91,8 @@ export default function EbeveynKontrolu() {
         <div className="mt-4 space-y-4">
           <p className="text-sm">
             Durum: <span className={durum.aktif ? "text-emerald-300" : "text-slate-400"}>{durum.aktif ? "Açık" : "Kapalı"}</span>
-            {durum.aktif && durum.kategoriler.length > 0 && <> · Kilitli: {durum.kategoriler.join(", ")}</>}
+            {durum.aktif && durum.tumKanallar && <> · Tüm kanallar gizli</>}
+            {durum.aktif && !durum.tumKanallar && durum.kategoriler.length > 0 && <> · Kilitli: {durum.kategoriler.join(", ")}</>}
           </p>
           <div className="flex flex-wrap gap-3">
             <button type="button" onClick={() => setDuzenle(true)} className={BUTON}>
@@ -115,7 +119,14 @@ export default function EbeveynKontrolu() {
             <span className="mb-1 block text-xs text-slate-400">Yeni PIN (4 ila 6 rakam)</span>
             <input required inputMode="numeric" pattern="\d{4,6}" value={yeniPin} onChange={(e) => setYeniPin(e.target.value)} className={INPUT} />
           </label>
-          <div>
+          <label className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-slate-200">
+            <input type="checkbox" checked={tumKanallar} onChange={(e) => setTumKanallar(e.target.checked)} className="mt-1" />
+            <span>
+              Tüm kanalları gizle
+              <span className="block text-xs text-slate-400">Açıkken PIN girilene kadar hiçbir kanal listelenmez ve izlenemez. Aşağıdaki kategori seçimi bu durumda kullanılmaz.</span>
+            </span>
+          </label>
+          <div className={tumKanallar ? "pointer-events-none opacity-40" : ""}>
             <span className="mb-2 block text-xs text-slate-400">Kilitlenecek kategoriler</span>
             <div className="flex flex-wrap gap-2">
               {tumKategoriler.length === 0 && <p className="text-xs text-slate-500">Henüz kategori yok.</p>}

@@ -30,6 +30,7 @@ export const paketGuncelSemasi = z.object({
     .array(z.object({ ay: z.number().int().min(1).max(36), fiyat: z.number().min(0).max(100000) }))
     .min(1)
     .max(6)
+    .refine((a) => new Set(a.map((s) => s.ay)).size === a.length, "Aynı süre iki kez eklenemez.")
     .optional(),
   ozellikler: z.array(z.string().trim().max(120)).max(20).optional(),
   aktif: z.boolean().optional(),

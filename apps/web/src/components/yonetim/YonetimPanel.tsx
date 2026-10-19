@@ -334,6 +334,10 @@ function Paketler() {
 
   async function kaydet(p: Paket) {
     setBilgi(null);
+    if (new Set(p.sureSecenekleri.map((s) => s.ay)).size !== p.sureSecenekleri.length) {
+      setBilgi({ tur: "hata", metin: "Aynı süre iki kez eklenemez." });
+      return;
+    }
     const sonuc = await api<{ mesaj: string }>(`/yonetim/paketler/${p.id}`, {
       ad: p.ad,
       cihazSiniri: p.cihazSiniri,
@@ -347,7 +351,7 @@ function Paketler() {
   return (
     <div className="space-y-6">
       <BilgiKutusu bilgi={bilgi} />
-      <p className="text-sm text-slate-400">Her paket için cihaz sınırını, süre seçeneklerini ve fiyatları buradan değiştirebilirsiniz. Süreler ay:fiyat biçiminde yazılır, örneğin 1:0, 3:0, 12:0.</p>
+      <p className="text-sm text-slate-400">Her paket için cihaz sınırını, süre seçeneklerini ve fiyatları buradan değiştirebilirsiniz. Değişiklik Kaydet'e basınca sitedeki paketlere yansır.</p>
       {paketler.map((p) => (
         <Kart key={p.id} baslik={p.ad}>
           <div className="grid gap-4 md:grid-cols-2">
@@ -359,14 +363,43 @@ function Paketler() {
               <span className="mb-1 block text-xs text-slate-400">Aynı anda cihaz sınırı</span>
               <input type="number" min={1} max={20} value={p.cihazSiniri} onChange={(e) => guncelle(p.id, { cihazSiniri: Number(e.target.value) })} className={INPUT} />
             </label>
-            <label className="block">
-              <span className="mb-1 block text-xs text-slate-400">Süreler (ay:fiyat)</span>
-              <input
-                value={p.sureSecenekleri.map((s) => `${s.ay}:${s.fiyat}`).join(", ")}
-                onChange={(e) => guncelle(p.id, { sureSecenekleri: sureleriAyristir(e.target.value) })}
-                className={INPUT}
-              />
-            </label>
+            <div className="md:col-span-2">
+              <span className="mb-2 block text-xs text-slate-400">Süre ve fiyat (₺, 0 = ücretsiz)</span>
+              <div className="space-y-2">
+                {p.sureSecenekleri.map((s, i) => (
+                  <div key={i} className="flex flex-wrap items-center gap-2">
+                    <input
+                      type="number" min={1} max={36} aria-label="Süre (ay)" value={s.ay}
+                      onChange={(e) => guncelle(p.id, { sureSecenekleri: p.sureSecenekleri.map((x, j) => (j === i ? { ...x, ay: Number(e.target.value) } : x)) })}
+                      className={`${INPUT} w-24`}
+                    />
+                    <span className="text-xs text-slate-400">ay</span>
+                    <input
+                      type="number" min={0} max={100000} step="0.01" aria-label="Fiyat (₺)" value={s.fiyat}
+                      onChange={(e) => guncelle(p.id, { sureSecenekleri: p.sureSecenekleri.map((x, j) => (j === i ? { ...x, fiyat: Number(e.target.value) } : x)) })}
+                      className={`${INPUT} w-32`}
+                    />
+                    <span className="text-xs text-slate-400">₺</span>
+                    <button
+                      type="button" disabled={p.sureSecenekleri.length <= 1}
+                      onClick={() => guncelle(p.id, { sureSecenekleri: p.sureSecenekleri.filter((_, j) => j !== i) })}
+                      className="rounded-full border border-rose-400/40 px-3 py-1 text-xs text-rose-200 hover:bg-rose-500/10 disabled:opacity-40"
+                    >
+                      Sil
+                    </button>
+                  </div>
+                ))}
+                {p.sureSecenekleri.length < 6 && (
+                  <button
+                    type="button"
+                    onClick={() => guncelle(p.id, { sureSecenekleri: [...p.sureSecenekleri, { ay: 1, fiyat: 0 }] })}
+                    className="rounded-full border border-white/15 px-3 py-1 text-xs text-slate-200 hover:bg-white/10"
+                  >
+                    + Süre ekle
+                  </button>
+                )}
+              </div>
+            </div>
             <label className="flex items-center gap-3 pt-6 text-sm text-slate-300">
               <input type="checkbox" checked={p.aktif} onChange={(e) => guncelle(p.id, { aktif: e.target.checked })} />
               Pakette satışa açık
@@ -383,18 +416,6 @@ function Paketler() {
       ))}
     </div>
   );
-}
-
-function sureleriAyristir(metin: string): Sure[] {
-  return metin
-    .split(",")
-    .map((parca) => parca.trim())
-    .filter(Boolean)
-    .map((parca) => {
-      const [ay, fiyat] = parca.split(":").map((s) => Number(s.trim()));
-      return { ay: Number.isFinite(ay) ? ay : 0, fiyat: Number.isFinite(fiyat) ? fiyat : 0 };
-    })
-    .filter((s) => s.ay > 0);
 }
 
 type KullaniciSatiri = {

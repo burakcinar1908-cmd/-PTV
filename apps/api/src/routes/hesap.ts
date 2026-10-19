@@ -36,10 +36,11 @@ router.get(
 router.get(
   "/ebeveyn",
   asyncHandler(async (req, res) => {
-    const kullanici = await User.findById(kullaniciId(req)).select("+ebeveynPinHash ebeveynKategoriler").lean();
+    const kullanici = await User.findById(kullaniciId(req)).select("+ebeveynPinHash ebeveynKategoriler ebeveynTumKanallar").lean();
     res.json({
       aktif: Boolean(kullanici?.ebeveynPinHash),
       kategoriler: kullanici?.ebeveynKategoriler ?? [],
+      tumKanallar: Boolean(kullanici?.ebeveynTumKanallar),
     });
   })
 );
@@ -48,6 +49,7 @@ const guncelleSemasi = z.object({
   mevcutPin: z.string().optional(),
   yeniPin: pinSemasi,
   kategoriler: z.array(z.string().trim().min(1).max(60)).max(100),
+  tumKanallar: z.boolean().default(false),
 });
 
 // Ebeveyn kontrolünü açar veya ayarlarını değiştirir. Zaten PIN varsa mevcut PIN istenir.
@@ -63,7 +65,7 @@ router.put(
     }
     await User.updateOne(
       { _id: kullaniciId(req) },
-      { $set: { ebeveynPinHash: await hashle(veri.yeniPin), ebeveynKategoriler: veri.kategoriler } }
+      { $set: { ebeveynPinHash: await hashle(veri.yeniPin), ebeveynKategoriler: veri.kategoriler, ebeveynTumKanallar: veri.tumKanallar } }
     );
     res.json({ mesaj: "Ebeveyn kontrolü kaydedildi." });
   })
@@ -80,7 +82,7 @@ router.delete(
     }
     await User.updateOne(
       { _id: kullaniciId(req) },
-      { $unset: { ebeveynPinHash: "" }, $set: { ebeveynKategoriler: [] } }
+      { $unset: { ebeveynPinHash: "" }, $set: { ebeveynKategoriler: [], ebeveynTumKanallar: false } }
     );
     res.json({ mesaj: "Ebeveyn kontrolü kapatıldı." });
   })

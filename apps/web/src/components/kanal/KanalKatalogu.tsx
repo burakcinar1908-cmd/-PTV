@@ -6,7 +6,7 @@ import { sonIzlenenleriOku, type Kanal } from "@/lib/kanal";
 import KanalKarti from "./KanalKarti";
 import KilitAc from "./KilitAc";
 
-type Liste = { kanallar: Kanal[]; kategoriler: string[]; paketGerekli: boolean; kilitliKategoriler: string[] };
+type Liste = { kanallar: Kanal[]; kategoriler: string[]; paketGerekli: boolean; kilitliKategoriler: string[]; tumKilitli?: boolean };
 
 // "AR | BAHRAIN", "TR ✦ SPOR" gibi adlarda baştaki ülke/grup kodunu ayırır.
 const AYIRAC = /^\s*([^\s|✦✪★•:–-]{1,10})\s*(?:\||✦|✪|★|•|:|–|-)\s*(.*)$/u;
@@ -51,6 +51,7 @@ export default function KanalKatalogu() {
   const [bilgi, setBilgi] = useState<string | null>(null);
   const [paketGerekli, setPaketGerekli] = useState(false);
   const [kilitliKategoriler, setKilitliKategoriler] = useState<string[]>([]);
+  const [tumKilitli, setTumKilitli] = useState(false);
   const [yenile, setYenile] = useState(0);
 
   useEffect(() => {
@@ -75,6 +76,7 @@ export default function KanalKatalogu() {
         setKanallar(sonuc.veri.kanallar);
         setPaketGerekli(sonuc.veri.paketGerekli);
         setKilitliKategoriler(sonuc.veri.kilitliKategoriler ?? []);
+        setTumKilitli(Boolean(sonuc.veri.tumKilitli));
         kategorilerRef.current = sonuc.veri.kategoriler;
         setKategoriler(sonuc.veri.kategoriler);
         setHata(null);
@@ -183,7 +185,7 @@ export default function KanalKatalogu() {
         </p>
       )}
 
-      {sonIzlenen.length > 0 && !arama && !kategori && !grup && (
+      {sonIzlenen.length > 0 && !arama && !kategori && !grup && !tumKilitli && (
         <section className="mt-10">
           <h2 className="mb-4 text-lg font-medium text-slate-300">Son izlenenler</h2>
           <div className="flex gap-3 overflow-x-auto pb-2">
@@ -196,8 +198,8 @@ export default function KanalKatalogu() {
         </section>
       )}
 
-      {kilitliKategoriler.length > 0 && (
-        <KilitAc kategoriler={kilitliKategoriler} onAcildi={() => setYenile((n) => n + 1)} />
+      {(tumKilitli || kilitliKategoriler.length > 0) && (
+        <KilitAc kategoriler={kilitliKategoriler} tumu={tumKilitli} onAcildi={() => setYenile((n) => n + 1)} />
       )}
 
       {paketGerekli && (
@@ -216,7 +218,7 @@ export default function KanalKatalogu() {
         )}
         {hata && <p role="alert" className="rounded-xl border border-rose-400/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{hata}</p>}
         {yukleniyor && !hata && <p className="text-slate-400">Kanallar yükleniyor...</p>}
-        {!yukleniyor && !hata && kanallar.length === 0 && (
+        {!yukleniyor && !hata && !tumKilitli && kanallar.length === 0 && (
           <p className="text-slate-400">Aramanızla eşleşen kanal bulunamadı.</p>
         )}
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

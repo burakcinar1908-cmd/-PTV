@@ -22,6 +22,7 @@ const YAYIN_SURESI_MS = 2 * 60 * 60 * 1000;
 const KALP_ASIMI_MS = 90 * 1000;
 const KALP_ARALIGI_SANIYE = 60;
 const META = "ad slug kategori logo aciklama";
+const TUM_KILITLI_MESAJ = "Tüm kanallar ebeveyn kilidiyle gizlendi. Kilidi PIN ile açın.";
 
 function gecerliId(id: string): Types.ObjectId {
   if (!Types.ObjectId.isValid(id)) throw new HttpHata(404, "Kanal bulunamadı.");
@@ -49,6 +50,10 @@ router.get(
   "/",
   asyncHandler(async (req, res) => {
     const erisim = await erisimiCoz(req);
+    if (erisim?.tumKilitli) {
+      res.json({ kanallar: [], kategoriler: [], paketGerekli: false, kilitliKategoriler: [], tumKilitli: true });
+      return;
+    }
     const filtre = kanalFiltresi(erisim);
     if (!filtre) {
       res.json({ kanallar: [], kategoriler: [], paketGerekli: true, kilitliKategoriler: [] });
@@ -124,7 +129,9 @@ router.delete(
 router.get(
   "/:id",
   asyncHandler(async (req, res) => {
-    const filtre = kanalFiltresi(await erisimiCoz(req));
+    const erisim = await erisimiCoz(req);
+    if (erisim?.tumKilitli) throw new HttpHata(403, TUM_KILITLI_MESAJ);
+    const filtre = kanalFiltresi(erisim);
     if (!filtre) throw new HttpHata(403, "Bu kanalı görmek için bir paket seçin.");
     const kanal = await Channel.findOne({ _id: gecerliId(req.params.id), aktif: true, ...filtre })
       .select(META)
@@ -139,6 +146,7 @@ router.get(
   asyncHandler(async (req, res) => {
     const erisim = await erisimiCoz(req);
     if (!erisim) throw new HttpHata(401, "Lütfen giriş yapın.");
+    if (erisim.tumKilitli) throw new HttpHata(403, TUM_KILITLI_MESAJ);
     const filtre = kanalFiltresi(erisim);
     if (!filtre) throw new HttpHata(403, "Bu yayını izlemek için bir paket seçin.");
 

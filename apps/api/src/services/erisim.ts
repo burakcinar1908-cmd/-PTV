@@ -12,6 +12,8 @@ export type Erisim = {
   planId: Types.ObjectId | null;
   cihazSiniri: number;
   kilitliKategoriler: string[];
+  // Ebeveyn kilidi "tüm kanalları gizle" modunda ve PIN ile açılmamışsa true.
+  tumKilitli: boolean;
 };
 
 // Oturum yoksa null döner. Yönetici her paketin kanallarını görür.
@@ -23,15 +25,16 @@ export async function erisimiCoz(req: Request): Promise<Erisim | null> {
   const oturum = await Session.findOne({ tokenHash: tokenOzeti(token), sonaErer: { $gt: new Date() } }).lean();
   if (!oturum) return null;
 
-  const kullanici = await User.findById(oturum.userId).select("rol ebeveynKategoriler dondurulduMu").lean();
+  const kullanici = await User.findById(oturum.userId).select("rol ebeveynKategoriler ebeveynTumKanallar dondurulduMu").lean();
   if (!kullanici || kullanici.dondurulduMu) return null;
 
   const kullaniciId = new Types.ObjectId(String(kullanici._id));
   const kilidiAcik = Boolean(oturum.ebeveynAcikTa && oturum.ebeveynAcikTa > new Date());
   const kilitliKategoriler = kilidiAcik ? [] : (kullanici.ebeveynKategoriler ?? []);
+  const tumKilitli = !kilidiAcik && Boolean(kullanici.ebeveynTumKanallar);
 
   if (kullanici.rol === "yonetici") {
-    return { kullaniciId, yonetici: true, planId: null, cihazSiniri: Number.POSITIVE_INFINITY, kilitliKategoriler: [] };
+    return { kullaniciId, yonetici: true, planId: null, cihazSiniri: Number.POSITIVE_INFINITY, kilitliKategoriler: [], tumKilitli: false };
   }
 
   const abonelik = await Subscription.findOne({
@@ -40,12 +43,13 @@ export async function erisimiCoz(req: Request): Promise<Erisim | null> {
     bitis: { $gt: new Date() },
   }).lean();
 
-  if (!abonelik) return { kullaniciId, yonetici: false, planId: null, cihazSiniri: 0, kilitliKategoriler };
+  if (!abonelik) return { kullaniciId, yonetici: false, planId: null, cihazSiniri: 0, kilitliKategoriler, tumKilitli };
   return {
     kullaniciId,
     yonetici: false,
     planId: new Types.ObjectId(String(abonelik.planId)),
     cihazSiniri: abonelik.cihazSiniri,
     kilitliKategoriler,
+    tumKilitli,
   };
 }
