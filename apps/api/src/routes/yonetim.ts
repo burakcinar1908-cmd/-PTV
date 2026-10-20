@@ -116,6 +116,17 @@ router.delete(
   })
 );
 
+router.delete(
+  "/kategoriler/:ad",
+  asyncHandler(async (req, res) => {
+    const ad = String(req.params.ad ?? "").trim();
+    if (!ad || ad.length > 60) throw new HttpHata(400, "Geçersiz kategori.");
+    const sonuc = await Channel.deleteMany({ kategori: ad });
+    if (sonuc.deletedCount === 0) throw new HttpHata(404, "Bu kategoride kanal yok.");
+    res.json({ mesaj: `"${ad}" kategorisindeki ${sonuc.deletedCount} kanal silindi.`, silinen: sonuc.deletedCount });
+  })
+);
+
 // Listedeki her yayın adresi için: varsa güncelle, yoksa ekle.
 router.post(
   "/m3u-iceaktar",

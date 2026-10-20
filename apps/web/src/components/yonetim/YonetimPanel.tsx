@@ -213,6 +213,14 @@ function Kanallar() {
     yukle();
   }
 
+  async function kategoriSil(ad: string) {
+    const sayi = kanallar.filter((k) => k.kategori === ad).length;
+    if (!window.confirm(`"${ad}" kategorisindeki ${sayi} kanal silinecek. Emin misiniz?`)) return;
+    const s = await api<{ mesaj: string }>(`/yonetim/kategoriler/${encodeURIComponent(ad)}`, undefined, "DELETE");
+    setBilgi(s.ok ? { tur: "basari", metin: s.veri.mesaj } : { tur: "hata", metin: s.mesaj });
+    yukle();
+  }
+
   function duzenle(k: Kanal) {
     const ad = window.prompt("Kanal adı", k.ad);
     if (ad === null) return;
@@ -258,6 +266,18 @@ function Kanallar() {
             yukle();
           }}
         />
+      </Kart>
+
+      <Kart baslik={`Kategoriler (${new Set(kanallar.map((k) => k.kategori)).size})`}>
+        {kanallar.length === 0 && <p className="text-slate-400">Henüz kategori yok.</p>}
+        <div className="flex flex-wrap gap-2">
+          {Array.from(new Set(kanallar.map((k) => k.kategori))).sort((a, b) => a.localeCompare(b, "tr")).map((ad) => (
+            <span key={ad} className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-1 text-sm">
+              {ad} <span className="text-slate-400">({kanallar.filter((k) => k.kategori === ad).length})</span>
+              <button type="button" onClick={() => kategoriSil(ad)} aria-label={`${ad} kategorisini sil`} className="text-rose-300 hover:text-rose-200">Sil</button>
+            </span>
+          ))}
+        </div>
       </Kart>
 
       <Kart baslik={`Kanallar (${kanallar.length})`}>

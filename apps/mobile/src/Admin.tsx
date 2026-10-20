@@ -9,20 +9,20 @@ type KullaniciSatiri = { id: string; ad: string; email: string; rol: string; don
 type DestekSatiri = { id: string; ad: string; email: string; mesaj: string; durum: string; tarih: string; yanit: string };
 
 export default function Admin() {
-  const [bolum, setBolum] = useState<"kullanici" | "destek">("kullanici");
+  const [bolum, setBolum] = useState<"kullanici" | "destek" | "kategori">("kullanici");
 
   return (
     <View style={{ flex: 1 }}>
       <View style={styles.altSekmeSatiri}>
-        {(["kullanici", "destek"] as const).map((b) => (
+        {(["kullanici", "destek", "kategori"] as const).map((b) => (
           <Pressable key={b} onPress={() => setBolum(b)} style={[styles.altSekme, bolum === b && styles.altSekmeAktif]}>
             <Text style={[styles.altSekmeYazi, bolum === b && styles.altSekmeYaziAktif]}>
-              {b === "kullanici" ? "Kullanıcılar" : "Destek"}
+              {b === "kullanici" ? "Kullanıcılar" : b === "destek" ? "Destek" : "Kategoriler"}
             </Text>
           </Pressable>
         ))}
       </View>
-      {bolum === "kullanici" ? <KullaniciListesi /> : <DestekListesi />}
+      {bolum === "kullanici" ? <KullaniciListesi /> : bolum === "destek" ? <DestekListesi /> : <KategoriListesi />}
     </View>
   );
 }
@@ -84,6 +84,65 @@ function KullaniciListesi() {
               </Text>
             </Pressable>
           )}
+        </View>
+      ))}
+    </ScrollView>
+  );
+}
+
+function KategoriListesi() {
+  const [liste, setListe] = useState<{ ad: string; sayi: number }[] | null>(null);
+  const [hata, setHata] = useState<string | null>(null);
+  const [islemde, setIslemde] = useState<string | null>(null);
+
+  async function yukle() {
+    const s = await istek<{ kanallar: { kategori: string }[] }>("/yonetim/kanallar");
+    if (!s.ok) return setHata(s.mesaj);
+    const sayilar = new Map<string, number>();
+    for (const k of s.veri.kanallar) sayilar.set(k.kategori, (sayilar.get(k.kategori) ?? 0) + 1);
+    setListe(
+      Array.from(sayilar, ([ad, sayi]) => ({ ad, sayi })).sort((a, b) => a.ad.localeCompare(b.ad, "tr"))
+    );
+  }
+
+  useEffect(() => {
+    yukle();
+  }, []);
+
+  function sil(ad: string, sayi: number) {
+    Alert.alert("Kategoriyi sil", `"${ad}" kategorisindeki ${sayi} kanal silinecek.`, [
+      { text: "Vazgeç", style: "cancel" },
+      {
+        text: "Sil",
+        style: "destructive",
+        onPress: async () => {
+          setIslemde(ad);
+          const s = await istek<{ mesaj: string }>(`/yonetim/kategoriler/${encodeURIComponent(ad)}`, undefined, "DELETE");
+          setIslemde(null);
+          if (!s.ok) return Alert.alert("Hata", s.mesaj);
+          yukle();
+        },
+      },
+    ]);
+  }
+
+  if (hata) return <Bos metin={hata} />;
+  if (!liste) return <Yukleniyor />;
+  if (liste.length === 0) return <Bos metin="Kategori yok." />;
+
+  return (
+    <ScrollView contentContainerStyle={{ gap: 10, paddingBottom: 40 }}>
+      {liste.map((k) => (
+        <View key={k.ad} style={styles.kart}>
+          <Text style={styles.kartBaslik}>{k.ad}</Text>
+          <Text style={styles.etiket}>{k.sayi} kanal</Text>
+          <Pressable
+            onPress={() => sil(k.ad, k.sayi)}
+            disabled={islemde === k.ad}
+            style={[styles.ikincilButon, styles.dondurButon]}
+          >
+            <Text style={styles.ikincilYazi}>Kategoriyi sil</Text>
+          </Pressable>
         </View>
       ))}
     </ScrollView>
