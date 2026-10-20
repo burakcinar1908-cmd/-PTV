@@ -18,7 +18,7 @@
       "bundleIdentifier": "com.iptv.mobile"
     },
     "extra": {
-      "apiBase": "https://iptv-api-erk5.onrender.com"
+      "apiBase": "https://apitv-indol.vercel.app"
     },
     "plugins": [
       "expo-asset",
