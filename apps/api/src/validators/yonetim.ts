@@ -71,6 +71,7 @@ export const kullaniciGuncelSemasi = z.object({
   email: z.string().trim().email("Geçersiz e-posta.").max(120).optional(),
   sifre: z.string().min(8, "Şifre en az 8 karakter olmalı.").max(128).optional(),
   dondurulduMu: z.boolean().optional(),
+  emailDogrulandi: z.boolean().optional(),
 });
 
 export const abonelikEkleSemasi = z.object({

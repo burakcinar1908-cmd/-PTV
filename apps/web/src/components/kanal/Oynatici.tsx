@@ -215,6 +215,34 @@ export default function Oynatici({ id }: { id: string }) {
     };
   }, [id, tekrar]);
 
+  // Yayın takıldıysa (zaman 12 sn ilerlemediyse) ya da bittiyse kaynağı yeniden yükle.
+  useEffect(() => {
+    if (durum !== "oynatiliyor") return;
+    let sonZaman = -1;
+    let sonDegisim = Date.now();
+    const kontrol = setInterval(() => {
+      const v = videoRef.current;
+      if (!v) return;
+      if (v.paused) {
+        sonDegisim = Date.now();
+        return;
+      }
+      if (v.currentTime !== sonZaman) {
+        sonZaman = v.currentTime;
+        sonDegisim = Date.now();
+        return;
+      }
+      if (Date.now() - sonDegisim > 12000) setTekrar((n) => n + 1);
+    }, 3000);
+    const bitti = () => setTekrar((n) => n + 1);
+    const v = videoRef.current;
+    v?.addEventListener("ended", bitti);
+    return () => {
+      clearInterval(kontrol);
+      v?.removeEventListener("ended", bitti);
+    };
+  }, [durum]);
+
   return (
     <div className="mx-auto max-w-5xl px-6 pb-24 pt-32">
       <h1 className="mb-6 text-2xl font-semibold">{kanal?.ad ?? "Kanal"}</h1>

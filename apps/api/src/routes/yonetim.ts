@@ -353,6 +353,13 @@ router.patch(
       kullanici.dondurulduMu = veri.dondurulduMu;
       if (veri.dondurulduMu) await Session.deleteMany({ userId: id });
     }
+    if (veri.emailDogrulandi !== undefined) {
+      kullanici.emailDogrulandi = veri.emailDogrulandi;
+      if (veri.emailDogrulandi) {
+        kullanici.set("dogrulamaTokenHash", undefined);
+        kullanici.set("dogrulamaSonTarih", undefined);
+      }
+    }
     await kullanici.save();
     res.json({ mesaj: "Kullanıcı güncellendi." });
   })

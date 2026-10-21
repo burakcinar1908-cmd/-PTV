@@ -473,6 +473,11 @@ function Kullanicilar() {
     yukle();
   }
 
+  function elleDogrula(k: KullaniciSatiri) {
+    if (!window.confirm(`${k.email} hesabı elle doğrulansın mı?`)) return;
+    calistir(k, api(`/yonetim/kullanicilar/${k.id}`, { emailDogrulandi: true }, "PATCH"));
+  }
+
   function dondur(k: KullaniciSatiri) {
     const yeni = !k.dondurulduMu;
     if (!window.confirm(`${k.email} hesabı ${yeni ? "dondurulsun" : "yeniden açılsın"} mu?`)) return;
@@ -540,6 +545,9 @@ function Kullanicilar() {
                     <button type="button" disabled={islemde === k.id} onClick={() => dondur(k)} className={KUCUK_BUTON}>
                       {k.dondurulduMu ? "Aç" : "Dondur"}
                     </button>
+                    {!k.emailDogrulandi && (
+                      <button type="button" disabled={islemde === k.id} onClick={() => elleDogrula(k)} className={KUCUK_BUTON}>Doğrula</button>
+                    )}
                     <button type="button" disabled={islemde === k.id} onClick={() => sifreDegistir(k)} className={KUCUK_BUTON}>Şifre</button>
                     <button type="button" disabled={islemde === k.id} onClick={() => emailDegistir(k)} className={KUCUK_BUTON}>E-posta</button>
                     <button type="button" disabled={islemde === k.id} onClick={() => abonelikEkle(k)} className={KUCUK_BUTON}>Üyelik ekle</button>
