@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 import { sonIzlenenEkle, type Kanal } from "@/lib/kanal";
 
 const EN_FAZLA_YENIDEN_DENEME = 3;
-const BASLAMA_ZAMAN_ASIMI_MS = 20000;
+const BASLAMA_ZAMAN_ASIMI_MS = 6000;
 
 type MpegtsPlayer = {
   attachMediaElement(v: HTMLVideoElement): void;
@@ -26,6 +26,8 @@ export default function Oynatici({ id }: { id: string }) {
   const [durum, setDurum] = useState<"yukleniyor" | "oynatiliyor" | "hata">("yukleniyor");
   const [mesaj, setMesaj] = useState<string | null>(null);
   const [tekrar, setTekrar] = useState(0);
+  const hlsRef = useRef<Hls | null>(null);
+  const urlRef = useRef<string | null>(null);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -61,6 +63,7 @@ export default function Oynatici({ id }: { id: string }) {
 
       // Worker içinde göreli URL çözülemez; mutlak adrese çevir.
       const url = new URL(yayin.veri.url, window.location.origin).toString();
+      urlRef.current = url;
 
       // Doğrudan dosya (MP4/MKV vb.) ise HLS yerine tarayıcının kendi oynatıcısını kullan.
       if ((yayin.veri as { tur?: string }).tur === "dogrudan") {
@@ -123,7 +126,7 @@ export default function Oynatici({ id }: { id: string }) {
           if (!iptal && !oynatildi) {
             hataGoster("Yayın 30 saniyede başlamadı. Kaynak çok yavaş ya da erişilemez olabilir.");
           }
-        }, 30000);
+        }, 12000);
       }
 
       // Ham MPEG-TS yayınlarını mpegts.js ile oynat; olmazsa tarayıcının kendi oynatıcısına geç.
@@ -155,12 +158,23 @@ export default function Oynatici({ id }: { id: string }) {
         );
         oynatici.load();
         if (zamanAsimi) clearTimeout(zamanAsimi);
-        zamanAsimi = setTimeout(() => natifeDene(), 15000);
+        zamanAsimi = setTimeout(() => natifeDene(), 6000);
       }
 
       if (Hls.isSupported()) {
         let yenidenDeneme = 0;
-        hls = new Hls({ enableWorker: true });
+        hls = new Hls({
+          enableWorker: true,
+          lowLatencyMode: false,
+          liveSyncDurationCount: 3,
+          liveMaxLatencyDurationCount: 10,
+          maxBufferHole: 0.5,
+          backBufferLength: 30,
+          manifestLoadingMaxRetry: 6,
+          levelLoadingMaxRetry: 6,
+          fragLoadingMaxRetry: 6,
+        });
+        hlsRef.current = hls;
         hls.loadSource(url);
         hls.attachMedia(video);
 
@@ -212,10 +226,31 @@ export default function Oynatici({ id }: { id: string }) {
       if (kalpZamanlayici) clearInterval(kalpZamanlayici);
       if (oynatmaId) api(`/kanallar/yayin/${oynatmaId}`, undefined, "DELETE");
       hls?.destroy();
+      hlsRef.current = null;
     };
   }, [id, tekrar]);
 
-  // Yayın takıldıysa (zaman 12 sn ilerlemediyse) ya da bittiyse kaynağı yeniden yükle.
+  // Takılma ya da bitiş: önce aynı oynatıcıda yerinde kurtar, olmazsa tam yeniden başlat.
+  function yerindeKurtar() {
+    const v = videoRef.current;
+    const h = hlsRef.current;
+    const url = urlRef.current;
+    if (h && url) {
+      h.stopLoad();
+      h.loadSource(url);
+      h.startLoad();
+      v?.play().catch(() => {});
+      return;
+    }
+    if (v && url && v.src && !v.src.startsWith("blob:")) {
+      v.load();
+      v.play().catch(() => {});
+      return;
+    }
+    setTekrar((n) => n + 1);
+  }
+
+  // Yayın takıldıysa (zaman 12 sn ilerlemediyse) ya da bittiyse kurtar.
   useEffect(() => {
     if (durum !== "oynatiliyor") return;
     let sonZaman = -1;
@@ -232,9 +267,12 @@ export default function Oynatici({ id }: { id: string }) {
         sonDegisim = Date.now();
         return;
       }
-      if (Date.now() - sonDegisim > 12000) setTekrar((n) => n + 1);
+      if (Date.now() - sonDegisim > 12000) {
+        sonDegisim = Date.now();
+        yerindeKurtar();
+      }
     }, 3000);
-    const bitti = () => setTekrar((n) => n + 1);
+    const bitti = () => yerindeKurtar();
     const v = videoRef.current;
     v?.addEventListener("ended", bitti);
     return () => {
