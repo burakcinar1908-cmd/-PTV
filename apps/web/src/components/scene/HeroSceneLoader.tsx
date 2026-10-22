@@ -42,10 +42,8 @@ export default function HeroSceneLoader() {
   if (!ready || reducedMotion || !webgl) return <SceneFallback />;
 
   return (
-    <div className="absolute inset-0">
-      <SahneKoruma>
-        <HeroScene mobile={mobile} reducedMotion={reducedMotion} />
-      </SahneKoruma>
-    </div>
+    <SahneKoruma>
+      <HeroScene mobile={mobile} reducedMotion={reducedMotion} />
+    </SahneKoruma>
   );
 }

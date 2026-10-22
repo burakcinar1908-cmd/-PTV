@@ -10,6 +10,7 @@ const schema = z.object({
   SESSION_SECRET: z.string().min(32),
   COOKIE_DOMAIN: z.string().default("localhost"),
   STREAM_SIGNING_SECRET: z.string().min(32),
+  STREAM_PUBLIC_URL: z.string().url().default("http://localhost:4100"),
   STREAM_LINK_TTL_SECONDS: z.coerce.number().default(300),
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().default(587),

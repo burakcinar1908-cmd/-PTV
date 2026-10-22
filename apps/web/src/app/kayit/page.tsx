@@ -6,7 +6,7 @@ export default function Page() {
     <AuthShell baslik="Hesap oluşturun" altyazi="Birkaç adımda izlemeye başlayın.">
       <KayitForm />
       <AltBaglanti>
-        Zaten hesabınız var mı? <a href="/giris" className="text-cyan-300 hover:text-cyan-200">Giriş yapın</a>
+        Zaten hesabınız var mı? <a href="/giris" className="text-[var(--accent)] hover:text-[var(--accent)]">Giriş yapın</a>
       </AltBaglanti>
     </AuthShell>
   );

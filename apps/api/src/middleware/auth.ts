@@ -24,7 +24,10 @@ export const requireAuth = asyncHandler(async (req: Request, _res: Response, nex
   if (!kullanici) throw new HttpHata(401, "Lütfen giriş yapın.");
   if (kullanici.dondurulduMu) throw new HttpHata(403, "Hesabınız dondurulmuş. Destek ile iletişime geçin.");
 
-  await Session.updateOne({ _id: oturum._id }, { $set: { sonErisim: new Date() } });
+  const simdi = Date.now();
+  if (!oturum.sonErisim || simdi - new Date(oturum.sonErisim).getTime() > 5 * 60 * 1000) {
+    await Session.updateOne({ _id: oturum._id }, { $set: { sonErisim: new Date(simdi) } });
+  }
 
   (req as Request & { kullanici?: unknown; oturumId?: string }).kullanici = kullanici;
   (req as Request & { oturumId?: string }).oturumId = String(oturum._id);

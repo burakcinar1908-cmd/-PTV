@@ -38,26 +38,26 @@ export default function HesapView() {
       <>
         <Bildirim tur="hata">{hata}</Bildirim>
         <AltBaglanti>
-          <a href="/giris" className="text-cyan-300 hover:text-cyan-200">Giriş yap</a>
+          <a href="/giris" className="text-[var(--accent)] hover:text-[var(--accent)]">Giriş yap</a>
         </AltBaglanti>
       </>
     );
   }
 
-  if (!kullanici) return <p className="text-slate-400">Yükleniyor...</p>;
+  if (!kullanici) return <p className="text-[var(--muted)]">Yükleniyor...</p>;
 
   return (
     <div className="space-y-6">
       <dl className="space-y-4 text-sm">
-        <div><dt className="text-slate-400">Ad Soyad</dt><dd className="mt-1 text-base">{kullanici.ad}</dd></div>
-        <div><dt className="text-slate-400">E-posta</dt><dd className="mt-1 text-base">{kullanici.email}</dd></div>
-        <div><dt className="text-slate-400">Hesap türü</dt><dd className="mt-1 text-base">{kullanici.rol === "yonetici" ? "Yönetici" : "Kullanıcı"}</dd></div>
+        <div><dt className="text-[var(--muted)]">Ad Soyad</dt><dd className="mt-1 text-base">{kullanici.ad}</dd></div>
+        <div><dt className="text-[var(--muted)]">E-posta</dt><dd className="mt-1 text-base">{kullanici.email}</dd></div>
+        <div><dt className="text-[var(--muted)]">Hesap türü</dt><dd className="mt-1 text-base">{kullanici.rol === "yonetici" ? "Yönetici" : "Kullanıcı"}</dd></div>
         <div>
-          <dt className="text-slate-400">Paket</dt>
+          <dt className="text-[var(--muted)]">Paket</dt>
           <dd className="mt-1 text-base">
             {abonelik === undefined && "Yükleniyor..."}
             {abonelik === null && (
-              <>Aktif paketiniz yok. <a href="/#paketler" className="text-cyan-300 hover:text-cyan-200">Paketlere bakın</a></>
+              <>Aktif paketiniz yok. <a href="/#paketler" className="text-[var(--accent)] hover:text-[var(--accent)]">Paketlere bakın</a></>
             )}
             {abonelik && (
               <>

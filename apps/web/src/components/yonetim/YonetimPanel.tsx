@@ -14,14 +14,14 @@ type Paket = { id: string; ad: string; cihazSiniri: number; sureSecenekleri: Sur
 
 type Bilgi = { tur: "hata" | "basari"; metin: string } | null;
 
-const INPUT = "w-full rounded-lg border border-white/10 bg-slate-900 px-3 py-2 text-sm outline-none focus:border-cyan-300/60";
-const BUTON = "rounded-full bg-cyan-400 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-cyan-300 disabled:opacity-60";
-const IKINCIL = "rounded-full border border-white/20 px-4 py-2 text-sm text-slate-200 hover:bg-white/10";
+const INPUT = "w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm outline-none focus:border-[var(--accent)]";
+const BUTON = "rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--accent-ink)] hover:bg-[var(--accent)] disabled:opacity-60";
+const IKINCIL = "rounded-full border border-white/20 px-4 py-2 text-sm text-[var(--text)] hover:bg-white/10";
 
 function BilgiKutusu({ bilgi }: { bilgi: Bilgi }) {
   if (!bilgi) return null;
   return (
-    <p role="alert" className={`mb-4 rounded-xl border px-4 py-3 text-sm ${bilgi.tur === "hata" ? "border-rose-400/40 bg-rose-500/10 text-rose-200" : "border-emerald-400/40 bg-emerald-500/10 text-emerald-200"}`}>
+    <p role="alert" className={`mb-4 rounded-xl border px-4 py-3 text-sm ${bilgi.tur === "hata" ? "border-rose-400/40 bg-rose-500/10 text-[var(--danger)]" : "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent)]"}`}>
       {bilgi.metin}
     </p>
   );
@@ -29,7 +29,7 @@ function BilgiKutusu({ bilgi }: { bilgi: Bilgi }) {
 
 function Kart({ baslik, children }: { baslik: string; children: ReactNode }) {
   return (
-    <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+    <section className="rounded-2xl border border-[var(--border)] bg-white/5 p-6">
       <h2 className="mb-4 text-lg font-medium">{baslik}</h2>
       {children}
     </section>
@@ -46,12 +46,12 @@ export default function YonetimPanel() {
     });
   }, []);
 
-  if (yetki === "yukleniyor") return <p className="px-6 pt-32 text-slate-400">Yükleniyor...</p>;
+  if (yetki === "yukleniyor") return <p className="px-6 pt-32 text-[var(--muted)]">Yükleniyor...</p>;
   if (yetki === "yok") {
     return (
       <div className="mx-auto max-w-md px-6 pt-32">
         <BilgiKutusu bilgi={{ tur: "hata", metin: "Bu sayfaya yalnızca yöneticiler erişebilir." }} />
-        <a href="/giris" className="text-cyan-300 hover:text-cyan-200">Giriş yap</a>
+        <a href="/giris" className="text-[var(--accent)] hover:text-[var(--accent)]">Giriş yap</a>
       </div>
     );
   }
@@ -69,7 +69,7 @@ export default function YonetimPanel() {
       <h1 className="text-3xl font-semibold">Yönetim Paneli</h1>
       <div className="mt-6 flex flex-wrap gap-2">
         {sekmeler.map((s) => (
-          <button key={s.id} type="button" onClick={() => setSekme(s.id)} className={`rounded-full px-4 py-2 text-sm transition ${sekme === s.id ? "bg-cyan-400 text-slate-950" : "bg-white/5 text-slate-300 hover:bg-white/10"}`}>
+          <button key={s.id} type="button" onClick={() => setSekme(s.id)} className={`rounded-full px-4 py-2 text-sm transition ${sekme === s.id ? "bg-[var(--accent)] text-[var(--accent-ink)]" : "bg-white/5 text-[var(--muted)] hover:bg-white/10"}`}>
             {s.ad}
           </button>
         ))}
@@ -92,7 +92,7 @@ function Ozet() {
       if (s.ok) setVeri(s.veri);
     });
   }, []);
-  if (!veri) return <p className="text-slate-400">Yükleniyor...</p>;
+  if (!veri) return <p className="text-[var(--muted)]">Yükleniyor...</p>;
   const kartlar = [
     { ad: "Kullanıcı", deger: veri.kullanici },
     { ad: "Aktif kanal", deger: veri.kanal },
@@ -102,8 +102,8 @@ function Ozet() {
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
       {kartlar.map((k) => (
-        <div key={k.ad} className="rounded-2xl border border-white/10 bg-white/5 p-6">
-          <p className="text-sm text-slate-400">{k.ad}</p>
+        <div key={k.ad} className="rounded-2xl border border-[var(--border)] bg-white/5 p-6">
+          <p className="text-sm text-[var(--muted)]">{k.ad}</p>
           <p className="mt-2 text-3xl font-semibold">{k.deger}</p>
         </div>
       ))}
@@ -248,8 +248,8 @@ function Kanallar() {
 
       <Kart baslik="M3U / M3U8 listesi içe aktar">
         <form onSubmit={m3uYukle} className="space-y-4">
-          <input type="file" accept=".m3u,.m3u8,.txt" onChange={(e) => dosyaSec(e.target.files?.[0])} className="block w-full text-sm text-slate-300 file:mr-4 file:rounded-full file:border-0 file:bg-white/10 file:px-4 file:py-2 file:text-slate-200" />
-          <p className="text-xs text-slate-500">Dosya seçtikten sonra içe aktarılacak paketleri işaretleyin. Aynı yayın adresi varsa kanal güncellenir, yoksa eklenir.</p>
+          <input type="file" accept=".m3u,.m3u8,.txt" onChange={(e) => dosyaSec(e.target.files?.[0])} className="block w-full text-sm text-[var(--muted)] file:mr-4 file:rounded-full file:border-0 file:bg-white/10 file:px-4 file:py-2 file:text-[var(--text)]" />
+          <p className="text-xs text-[var(--muted)]">Dosya seçtikten sonra içe aktarılacak paketleri işaretleyin. Aynı yayın adresi varsa kanal güncellenir, yoksa eklenir.</p>
           <PaketSecici paketler={paketler} secilen={m3uPaketler} onDegis={(id) => setM3uPaketler(paketSec(m3uPaketler, id))} />
           <button type="submit" disabled={islem || !m3uIcerik} className={BUTON}>İçe aktar</button>
         </form>
@@ -269,12 +269,12 @@ function Kanallar() {
       </Kart>
 
       <Kart baslik={`Kategoriler (${new Set(kanallar.map((k) => k.kategori)).size})`}>
-        {kanallar.length === 0 && <p className="text-slate-400">Henüz kategori yok.</p>}
+        {kanallar.length === 0 && <p className="text-[var(--muted)]">Henüz kategori yok.</p>}
         <div className="flex flex-wrap gap-2">
           {Array.from(new Set(kanallar.map((k) => k.kategori))).sort((a, b) => a.localeCompare(b, "tr")).map((ad) => (
             <span key={ad} className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-1 text-sm">
-              {ad} <span className="text-slate-400">({kanallar.filter((k) => k.kategori === ad).length})</span>
-              <button type="button" onClick={() => kategoriSil(ad)} aria-label={`${ad} kategorisini sil`} className="text-rose-300 hover:text-rose-200">Sil</button>
+              {ad} <span className="text-[var(--muted)]">({kanallar.filter((k) => k.kategori === ad).length})</span>
+              <button type="button" onClick={() => kategoriSil(ad)} aria-label={`${ad} kategorisini sil`} className="text-rose-300 hover:text-[var(--danger)]">Sil</button>
             </span>
           ))}
         </div>
@@ -284,28 +284,28 @@ function Kanallar() {
         <div className="mb-4 flex flex-wrap items-center gap-3 text-sm">
           <button type="button" onClick={() => setSecili(kanallar.map((k) => k.id))} className={IKINCIL}>Listedekilerin tümünü seç</button>
           <button type="button" onClick={() => setSecili([])} className={IKINCIL}>Seçimi temizle</button>
-          <span className="text-slate-400">{secili.length} kanal seçili</span>
+          <span className="text-[var(--muted)]">{secili.length} kanal seçili</span>
         </div>
-        {kanallar.length === 0 && <p className="text-slate-400">Henüz kanal yok.</p>}
+        {kanallar.length === 0 && <p className="text-[var(--muted)]">Henüz kanal yok.</p>}
         <div className="space-y-3">
           {kanallar.map((k) => (
-            <div key={k.id} className={`relative rounded-xl border border-white/10 bg-slate-950/40 p-4 pl-12 ${k.aktif ? "" : "opacity-60"}`}>
+            <div key={k.id} className={`relative rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 pl-12 ${k.aktif ? "" : "opacity-60"}`}>
               <input
                 type="checkbox"
                 aria-label={`${k.ad} seç`}
                 checked={secili.includes(k.id)}
                 onChange={() => setSecili(secili.includes(k.id) ? secili.filter((x) => x !== k.id) : [...secili, k.id])}
-                className="absolute left-4 top-5 h-4 w-4 accent-cyan-400"
+                className="absolute left-4 top-5 h-4 w-4 accent-[var(--accent)]"
               />
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-medium">{k.ad} <span className="ml-2 text-xs text-cyan-300">{k.kategori}</span></p>
-                  <p className="truncate text-xs text-slate-500">{k.yayinUrl}</p>
+                  <p className="font-medium">{k.ad} <span className="ml-2 text-xs text-[var(--accent)]">{k.kategori}</span></p>
+                  <p className="truncate text-xs text-[var(--muted)]">{k.yayinUrl}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <button type="button" onClick={() => guncelle(k.id, { aktif: !k.aktif })} className={IKINCIL}>{k.aktif ? "Pasifleştir" : "Aktifleştir"}</button>
                   <button type="button" onClick={() => duzenle(k)} className={IKINCIL}>Düzenle</button>
-                  <button type="button" onClick={() => sil(k.id, k.ad)} className="rounded-full border border-rose-400/40 px-4 py-2 text-sm text-rose-200 hover:bg-rose-500/10">Sil</button>
+                  <button type="button" onClick={() => sil(k.id, k.ad)} className="rounded-full border border-rose-400/40 px-4 py-2 text-sm text-[var(--danger)] hover:bg-rose-500/10">Sil</button>
                 </div>
               </div>
               <div className="mt-3">
@@ -320,14 +320,14 @@ function Kanallar() {
 }
 
 function PaketSecici({ paketler, secilen, onDegis }: { paketler: Paket[]; secilen: string[]; onDegis: (id: string) => void }) {
-  if (paketler.length === 0) return <p className="text-xs text-slate-500">Önce paket ekleyin.</p>;
+  if (paketler.length === 0) return <p className="text-xs text-[var(--muted)]">Önce paket ekleyin.</p>;
   return (
     <div className="flex flex-wrap gap-2 md:col-span-2">
-      <span className="self-center text-xs text-slate-400">Hangi paketlerde görünsün:</span>
+      <span className="self-center text-xs text-[var(--muted)]">Hangi paketlerde görünsün:</span>
       {paketler.map((p) => {
         const acik = secilen.includes(p.id);
         return (
-          <button key={p.id} type="button" onClick={() => onDegis(p.id)} className={`rounded-full px-3 py-1.5 text-xs transition ${acik ? "bg-cyan-400 text-slate-950" : "bg-white/5 text-slate-300 hover:bg-white/10"}`}>
+          <button key={p.id} type="button" onClick={() => onDegis(p.id)} className={`rounded-full px-3 py-1.5 text-xs transition ${acik ? "bg-[var(--accent)] text-[var(--accent-ink)]" : "bg-white/5 text-[var(--muted)] hover:bg-white/10"}`}>
             {p.ad}
           </button>
         );
@@ -371,20 +371,20 @@ function Paketler() {
   return (
     <div className="space-y-6">
       <BilgiKutusu bilgi={bilgi} />
-      <p className="text-sm text-slate-400">Her paket için cihaz sınırını, süre seçeneklerini ve fiyatları buradan değiştirebilirsiniz. Değişiklik Kaydet'e basınca sitedeki paketlere yansır.</p>
+      <p className="text-sm text-[var(--muted)]">Her paket için cihaz sınırını, süre seçeneklerini ve fiyatları buradan değiştirebilirsiniz. Değişiklik Kaydet'e basınca sitedeki paketlere yansır.</p>
       {paketler.map((p) => (
         <Kart key={p.id} baslik={p.ad}>
           <div className="grid gap-4 md:grid-cols-2">
             <label className="block">
-              <span className="mb-1 block text-xs text-slate-400">Paket adı</span>
+              <span className="mb-1 block text-xs text-[var(--muted)]">Paket adı</span>
               <input value={p.ad} onChange={(e) => guncelle(p.id, { ad: e.target.value })} className={INPUT} />
             </label>
             <label className="block">
-              <span className="mb-1 block text-xs text-slate-400">Aynı anda cihaz sınırı</span>
+              <span className="mb-1 block text-xs text-[var(--muted)]">Aynı anda cihaz sınırı</span>
               <input type="number" min={1} max={20} value={p.cihazSiniri} onChange={(e) => guncelle(p.id, { cihazSiniri: Number(e.target.value) })} className={INPUT} />
             </label>
             <div className="md:col-span-2">
-              <span className="mb-2 block text-xs text-slate-400">Süre ve fiyat (₺, 0 = ücretsiz)</span>
+              <span className="mb-2 block text-xs text-[var(--muted)]">Süre ve fiyat (₺, 0 = ücretsiz)</span>
               <div className="space-y-2">
                 {p.sureSecenekleri.map((s, i) => (
                   <div key={i} className="flex flex-wrap items-center gap-2">
@@ -393,17 +393,17 @@ function Paketler() {
                       onChange={(e) => guncelle(p.id, { sureSecenekleri: p.sureSecenekleri.map((x, j) => (j === i ? { ...x, ay: Number(e.target.value) } : x)) })}
                       className={`${INPUT} w-24`}
                     />
-                    <span className="text-xs text-slate-400">ay</span>
+                    <span className="text-xs text-[var(--muted)]">ay</span>
                     <input
                       type="number" min={0} max={100000} step="0.01" aria-label="Fiyat (₺)" value={s.fiyat}
                       onChange={(e) => guncelle(p.id, { sureSecenekleri: p.sureSecenekleri.map((x, j) => (j === i ? { ...x, fiyat: Number(e.target.value) } : x)) })}
                       className={`${INPUT} w-32`}
                     />
-                    <span className="text-xs text-slate-400">₺</span>
+                    <span className="text-xs text-[var(--muted)]">₺</span>
                     <button
                       type="button" disabled={p.sureSecenekleri.length <= 1}
                       onClick={() => guncelle(p.id, { sureSecenekleri: p.sureSecenekleri.filter((_, j) => j !== i) })}
-                      className="rounded-full border border-rose-400/40 px-3 py-1 text-xs text-rose-200 hover:bg-rose-500/10 disabled:opacity-40"
+                      className="rounded-full border border-rose-400/40 px-3 py-1 text-xs text-[var(--danger)] hover:bg-rose-500/10 disabled:opacity-40"
                     >
                       Sil
                     </button>
@@ -413,19 +413,19 @@ function Paketler() {
                   <button
                     type="button"
                     onClick={() => guncelle(p.id, { sureSecenekleri: [...p.sureSecenekleri, { ay: 1, fiyat: 0 }] })}
-                    className="rounded-full border border-white/15 px-3 py-1 text-xs text-slate-200 hover:bg-white/10"
+                    className="rounded-full border border-white/15 px-3 py-1 text-xs text-[var(--text)] hover:bg-white/10"
                   >
                     + Süre ekle
                   </button>
                 )}
               </div>
             </div>
-            <label className="flex items-center gap-3 pt-6 text-sm text-slate-300">
+            <label className="flex items-center gap-3 pt-6 text-sm text-[var(--muted)]">
               <input type="checkbox" checked={p.aktif} onChange={(e) => guncelle(p.id, { aktif: e.target.checked })} />
               Pakette satışa açık
             </label>
             <label className="block md:col-span-2">
-              <span className="mb-1 block text-xs text-slate-400">Özellikler (her satıra bir tane)</span>
+              <span className="mb-1 block text-xs text-[var(--muted)]">Özellikler (her satıra bir tane)</span>
               <textarea rows={3} value={p.ozellikler.join("\n")} onChange={(e) => guncelle(p.id, { ozellikler: e.target.value.split("\n").map((s) => s.trim()).filter(Boolean) })} className={INPUT} />
             </label>
           </div>
@@ -445,8 +445,8 @@ type DestekSatiri = {
   id: string; ad: string; email: string; mesaj: string; durum: string; tarih: string; yanit: string; yanitTarih: string | null;
 };
 
-const KUCUK_BUTON = "rounded-full border border-white/15 px-3 py-1 text-xs text-slate-200 hover:bg-white/10 disabled:opacity-50";
-const TEHLIKE_BUTON = "rounded-full border border-rose-400/40 px-3 py-1 text-xs text-rose-200 hover:bg-rose-500/10";
+const KUCUK_BUTON = "rounded-full border border-white/15 px-3 py-1 text-xs text-[var(--text)] hover:bg-white/10 disabled:opacity-50";
+const TEHLIKE_BUTON = "rounded-full border border-rose-400/40 px-3 py-1 text-xs text-[var(--danger)] hover:bg-rose-500/10";
 
 function Kullanicilar() {
   const [liste, setListe] = useState<KullaniciSatiri[]>([]);
@@ -520,7 +520,7 @@ function Kullanicilar() {
     <Kart baslik={`Kullanıcılar (${liste.length})`}>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="text-slate-400">
+          <thead className="text-[var(--muted)]">
             <tr>
               <th className="pb-3">Ad</th>
               <th className="pb-3">E-posta</th>
@@ -599,19 +599,19 @@ function Destek() {
 
   return (
     <Kart baslik={`Destek mesajları (${liste.length})`}>
-      {liste.length === 0 && <p className="text-slate-400">Henüz mesaj yok.</p>}
+      {liste.length === 0 && <p className="text-[var(--muted)]">Henüz mesaj yok.</p>}
       <div className="space-y-3">
         {liste.map((m) => (
-          <div key={m.id} className={`rounded-xl border p-4 ${m.durum === "yeni" ? "border-cyan-300/40 bg-cyan-400/5" : "border-white/10 bg-slate-950/40"}`}>
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
+          <div key={m.id} className={`rounded-xl border p-4 ${m.durum === "yeni" ? "border-[var(--accent)] bg-[var(--accent)]" : "border-[var(--border)] bg-[var(--surface)]"}`}>
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--muted)]">
               <span>{m.ad}{m.email ? ` · ${m.email}` : ""}</span>
               <span>{new Date(m.tarih).toLocaleString("tr-TR")}</span>
             </div>
-            <p className="mt-2 text-slate-200">{m.mesaj}</p>
+            <p className="mt-2 text-[var(--text)]">{m.mesaj}</p>
 
             {m.yanit && (
-              <div className="mt-3 rounded-lg border border-emerald-400/30 bg-emerald-500/5 p-3 text-sm text-slate-200">
-                <p className="mb-1 text-xs text-emerald-300">
+              <div className="mt-3 rounded-lg border border-[var(--accent)] bg-[var(--accent)] p-3 text-sm text-[var(--text)]">
+                <p className="mb-1 text-xs text-[var(--accent)]">
                   Yanıt{m.yanitTarih ? ` · ${new Date(m.yanitTarih).toLocaleString("tr-TR")}` : ""}
                 </p>
                 {m.yanit}
@@ -637,7 +637,7 @@ function Destek() {
               </button>
             </div>
 
-            <button type="button" onClick={() => durumDegistir(m.id, m.durum)} className="mt-3 text-xs text-cyan-300 hover:text-cyan-200">
+            <button type="button" onClick={() => durumDegistir(m.id, m.durum)} className="mt-3 text-xs text-[var(--accent)] hover:text-[var(--accent)]">
               {m.durum === "yeni" ? "Okundu olarak işaretle" : "Yeni olarak işaretle"}
             </button>
           </div>
@@ -693,16 +693,16 @@ function TopluIslemler({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
-        <button type="button" onClick={() => setTumu(false)} className={`rounded-full px-4 py-2 text-sm transition ${!tumu ? "bg-cyan-400 text-slate-950" : "bg-white/5 text-slate-300 hover:bg-white/10"}`}>
+        <button type="button" onClick={() => setTumu(false)} className={`rounded-full px-4 py-2 text-sm transition ${!tumu ? "bg-[var(--accent)] text-[var(--accent-ink)]" : "bg-white/5 text-[var(--muted)] hover:bg-white/10"}`}>
           Seçili kanallar ({secili.length})
         </button>
-        <button type="button" onClick={() => setTumu(true)} className={`rounded-full px-4 py-2 text-sm transition ${tumu ? "bg-amber-400 text-slate-950" : "bg-white/5 text-slate-300 hover:bg-white/10"}`}>
+        <button type="button" onClick={() => setTumu(true)} className={`rounded-full px-4 py-2 text-sm transition ${tumu ? "bg-amber-400 text-[var(--accent-ink)]" : "bg-white/5 text-[var(--muted)] hover:bg-white/10"}`}>
           Tüm kanallar ({toplam})
         </button>
       </div>
 
       <div>
-        <span className="mb-2 block text-xs text-slate-400">Paketler</span>
+        <span className="mb-2 block text-xs text-[var(--muted)]">Paketler</span>
         <div className="flex flex-wrap gap-2">
           {paketler.map((p) => {
             const acik = paketSecim.includes(p.id);
@@ -711,7 +711,7 @@ function TopluIslemler({
                 key={p.id}
                 type="button"
                 onClick={() => setPaketSecim(acik ? paketSecim.filter((x) => x !== p.id) : [...paketSecim, p.id])}
-                className={`rounded-full px-3 py-1.5 text-xs transition ${acik ? "bg-cyan-400 text-slate-950" : "bg-white/5 text-slate-300 hover:bg-white/10"}`}
+                className={`rounded-full px-3 py-1.5 text-xs transition ${acik ? "bg-[var(--accent)] text-[var(--accent-ink)]" : "bg-white/5 text-[var(--muted)] hover:bg-white/10"}`}
               >
                 {p.ad}
               </button>
@@ -725,7 +725,7 @@ function TopluIslemler({
         <button type="button" disabled={yukleniyor} onClick={() => uygula("paketCikar")} className={IKINCIL}>Paketlerden çıkar</button>
         <button type="button" disabled={yukleniyor} onClick={() => uygula("aktif")} className={IKINCIL}>Aktifleştir</button>
         <button type="button" disabled={yukleniyor} onClick={() => uygula("pasif")} className={IKINCIL}>Pasifleştir</button>
-        <button type="button" disabled={yukleniyor} onClick={() => uygula("sil")} className="rounded-full border border-rose-400/40 px-4 py-2 text-sm text-rose-200 hover:bg-rose-500/10">Sil</button>
+        <button type="button" disabled={yukleniyor} onClick={() => uygula("sil")} className="rounded-full border border-rose-400/40 px-4 py-2 text-sm text-[var(--danger)] hover:bg-rose-500/10">Sil</button>
       </div>
     </div>
   );

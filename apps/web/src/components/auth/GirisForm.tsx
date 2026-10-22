@@ -27,7 +27,7 @@ export default function GirisForm() {
       <Alan etiket="E-posta" type="email" autoComplete="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
       <Alan etiket="Şifre" type="password" autoComplete="current-password" required value={form.sifre} onChange={(e) => setForm({ ...form, sifre: e.target.value })} />
       <div className="flex justify-end">
-        <a href="/sifre-sifirla-iste" className="text-sm text-cyan-300 hover:text-cyan-200">Şifremi unuttum</a>
+        <a href="/sifre-sifirla-iste" className="text-sm text-[var(--accent)] hover:text-[var(--accent)]">Şifremi unuttum</a>
       </div>
       <Dugme type="submit" disabled={yukleniyor}>{yukleniyor ? "Giriş yapılıyor..." : "Giriş Yap"}</Dugme>
     </form>

@@ -5,9 +5,7 @@ import Hls from "hls.js";
 import { api } from "@/lib/api";
 import { sonIzlenenEkle, type Kanal } from "@/lib/kanal";
 
-const EN_FAZLA_YENIDEN_DENEME = 3;
-const BASLAMA_ZAMAN_ASIMI_MS = 6000;
-
+type Durum = "yukleniyor" | "oynatiliyor" | "hata";
 type MpegtsPlayer = {
   attachMediaElement(v: HTMLVideoElement): void;
   load(): void;
@@ -20,244 +18,164 @@ type MpegtsModul = {
   Events: { ERROR: string };
 };
 
+const HLS_YENIDEN_DENEME = 3;
+const TAKILMA_ESIGI_MS = 12000;
+
 export default function Oynatici({ id }: { id: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [kanal, setKanal] = useState<Kanal | null>(null);
-  const [durum, setDurum] = useState<"yukleniyor" | "oynatiliyor" | "hata">("yukleniyor");
+  const [durum, setDurum] = useState<Durum>("yukleniyor");
   const [mesaj, setMesaj] = useState<string | null>(null);
   const [tekrar, setTekrar] = useState(0);
-  const hlsRef = useRef<Hls | null>(null);
-  const urlRef = useRef<string | null>(null);
 
+  // Yayın başlatma: kanal bilgisi, oynatma bağlantısı, kalp atışı ve kaynak zinciri (hls → mpegts → native).
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+    const v: HTMLVideoElement = video;
     let iptal = false;
-    let oynatildi = false;
-    let hls: Hls | null = null;
-    let zamanAsimi: ReturnType<typeof setTimeout> | null = null;
     let oynatmaId: string | null = null;
-    let kalpZamanlayici: ReturnType<typeof setInterval> | null = null;
+    let kalp: ReturnType<typeof setInterval> | null = null;
+    let hls: Hls | null = null;
     let mp: MpegtsPlayer | null = null;
 
-    function hataGoster(metin: string) {
+    setDurum("yukleniyor");
+    setMesaj(null);
+
+    const hazir = () => {
+      if (iptal) return;
+      setDurum("oynatiliyor");
+      setMesaj(null);
+      v.play().catch(() => {});
+    };
+    const hata = (metin: string) => {
+      if (iptal) return;
       setDurum("hata");
       setMesaj(metin);
+    };
+    const temizle = () => {
       hls?.destroy();
       hls = null;
+      mp?.destroy();
+      mp = null;
+    };
+
+    function nativeOynat(url: string) {
+      temizle();
+      v.src = url;
+      v.addEventListener("loadeddata", hazir, { once: true });
+      v.addEventListener(
+        "error",
+        () => hata("Bu yayın tarayıcıda oynatılamadı. Kaynak yanıt vermiyor ya da biçim desteklenmiyor."),
+        { once: true }
+      );
+    }
+
+    function mpegtsOynat(url: string) {
+      temizle();
+      (async () => {
+        const modul = (await import("mpegts.js")).default as unknown as MpegtsModul;
+        if (iptal) return;
+        if (!modul.isSupported()) {
+          nativeOynat(url);
+          return;
+        }
+        const p = modul.createPlayer({ type: "mpegts", isLive: true, url }, { enableWorker: true });
+        mp = p;
+        p.on(modul.Events.ERROR, () => nativeOynat(url));
+        p.attachMediaElement(v);
+        v.addEventListener("loadeddata", hazir, { once: true });
+        p.load();
+      })();
+    }
+
+    function hlsOynat(url: string) {
+      let denemeSayisi = 0;
+      const h = new Hls({
+        enableWorker: true,
+        lowLatencyMode: false,
+        liveSyncDurationCount: 3,
+        liveMaxLatencyDurationCount: 10,
+        backBufferLength: 30,
+        manifestLoadingMaxRetry: 4,
+        levelLoadingMaxRetry: 4,
+        fragLoadingMaxRetry: 4,
+      });
+      hls = h;
+      h.loadSource(url);
+      h.attachMedia(v);
+      h.on(Hls.Events.MANIFEST_PARSED, hazir);
+      h.on(Hls.Events.ERROR, (_olay, veri) => {
+        if (!veri.fatal) return;
+        if (veri.details === Hls.ErrorDetails.MANIFEST_PARSING_ERROR || denemeSayisi >= HLS_YENIDEN_DENEME) {
+          mpegtsOynat(url);
+          return;
+        }
+        denemeSayisi++;
+        if (veri.type === Hls.ErrorTypes.NETWORK_ERROR) {
+          setMesaj(`Bağlantı koptu, yeniden bağlanılıyor (${denemeSayisi}/${HLS_YENIDEN_DENEME})...`);
+          h.startLoad();
+        } else if (veri.type === Hls.ErrorTypes.MEDIA_ERROR) {
+          setMesaj(`Görüntü hatası, kurtarılıyor (${denemeSayisi}/${HLS_YENIDEN_DENEME})...`);
+          h.recoverMediaError();
+        } else {
+          mpegtsOynat(url);
+        }
+      });
     }
 
     (async () => {
-      setDurum("yukleniyor");
-      setMesaj(null);
-
       const kanalSonuc = await api<{ kanal: Kanal }>(`/kanallar/${id}`, undefined, "GET");
       if (iptal) return;
-      if (!kanalSonuc.ok) return hataGoster(kanalSonuc.mesaj);
+      if (!kanalSonuc.ok) return hata(kanalSonuc.mesaj);
       setKanal(kanalSonuc.veri.kanal);
       sonIzlenenEkle(kanalSonuc.veri.kanal);
 
-      const yayin = await api<{ url: string; tur?: string; oynatmaId: string; kalpSaniye: number }>(`/kanallar/${id}/yayin`, undefined, "GET");
+      const yayin = await api<{ url: string; tur?: string; oynatmaId: string; kalpSaniye: number }>(
+        `/kanallar/${id}/yayin`,
+        undefined,
+        "GET"
+      );
       if (iptal) return;
-      if (!yayin.ok) return hataGoster(yayin.mesaj);
+      if (!yayin.ok) return hata(yayin.mesaj);
 
-      // Worker içinde göreli URL çözülemez; mutlak adrese çevir.
       const url = new URL(yayin.veri.url, window.location.origin).toString();
-      urlRef.current = url;
-
-      // Doğrudan dosya (MP4/MKV vb.) ise HLS yerine tarayıcının kendi oynatıcısını kullan.
-      if ((yayin.veri as { tur?: string }).tur === "dogrudan") {
-        video.src = url;
-        video.addEventListener(
-          "loadeddata",
-          () => {
-            if (iptal) return;
-            oynatildi = true;
-            setDurum("oynatiliyor");
-            setMesaj(null);
-            video.play().catch(() => {});
-          },
-          { once: true }
-        );
-        video.addEventListener(
-          "error",
-          () => hataGoster("Bu dosya tarayıcınızda oynatılamıyor. Biçim (MKV/MP4) desteklenmiyor ya da bağlantı geçersiz."),
-          { once: true }
-        );
+      if (yayin.veri.tur === "dogrudan") {
+        nativeOynat(url);
         return;
       }
+
       oynatmaId = yayin.veri.oynatmaId;
-      // Cihaz sınırı için düzenli kalp atışı gönder.
       const kalpId = oynatmaId;
-      kalpZamanlayici = setInterval(() => {
+      if (iptal) {
+        api(`/kanallar/yayin/${kalpId}`, undefined, "DELETE");
+        return;
+      }
+      kalp = setInterval(() => {
         api("/kanallar/yayin/kalp", { oynatmaId: kalpId });
       }, yayin.veri.kalpSaniye * 1000);
 
-      zamanAsimi = setTimeout(() => mpegtsDene(), BASLAMA_ZAMAN_ASIMI_MS);
-
-      // HLS başlamazsa veya hata verirse tarayıcının kendi oynatıcısıyla dene.
-      function natifeDene() {
-        const video = videoRef.current;
-        if (!video || iptal || oynatildi) return;
-        hls?.destroy();
-        hls = null;
-        mp?.destroy();
-        mp = null;
-        video.src = url;
-        video.addEventListener(
-          "loadeddata",
-          () => {
-            if (iptal) return;
-            oynatildi = true;
-            setDurum("oynatiliyor");
-            setMesaj(null);
-            video.play().catch(() => {});
-          },
-          { once: true }
-        );
-        video.addEventListener(
-          "error",
-          () => hataGoster("Bu yayın tarayıcıda oynatılamadı. Kaynak yanıt vermiyor ya da biçim desteklenmiyor."),
-          { once: true }
-        );
-        video.play().catch(() => {});
-        if (zamanAsimi) clearTimeout(zamanAsimi);
-        zamanAsimi = setTimeout(() => {
-          if (!iptal && !oynatildi) {
-            hataGoster("Yayın 30 saniyede başlamadı. Kaynak çok yavaş ya da erişilemez olabilir.");
-          }
-        }, 12000);
-      }
-
-      // Ham MPEG-TS yayınlarını mpegts.js ile oynat; olmazsa tarayıcının kendi oynatıcısına geç.
-      async function mpegtsDene() {
-        const video = videoRef.current;
-        if (!video || iptal || oynatildi) return;
-        hls?.destroy();
-        hls = null;
-        const modul = (await import("mpegts.js")).default as unknown as MpegtsModul;
-        if (iptal || oynatildi) return;
-        if (!modul.isSupported()) {
-          natifeDene();
-          return;
-        }
-        const oynatici = modul.createPlayer({ type: "mpegts", isLive: true, url }, { enableWorker: true });
-        mp = oynatici;
-        oynatici.on(modul.Events.ERROR, () => natifeDene());
-        oynatici.attachMediaElement(video);
-        video.addEventListener(
-          "loadeddata",
-          () => {
-            if (iptal) return;
-            oynatildi = true;
-            setDurum("oynatiliyor");
-            setMesaj(null);
-            video.play().catch(() => {});
-          },
-          { once: true }
-        );
-        oynatici.load();
-        if (zamanAsimi) clearTimeout(zamanAsimi);
-        zamanAsimi = setTimeout(() => natifeDene(), 6000);
-      }
-
-      if (Hls.isSupported()) {
-        let yenidenDeneme = 0;
-        hls = new Hls({
-          enableWorker: true,
-          lowLatencyMode: false,
-          liveSyncDurationCount: 3,
-          liveMaxLatencyDurationCount: 10,
-          maxBufferHole: 0.5,
-          backBufferLength: 30,
-          manifestLoadingMaxRetry: 6,
-          levelLoadingMaxRetry: 6,
-          fragLoadingMaxRetry: 6,
-        });
-        hlsRef.current = hls;
-        hls.loadSource(url);
-        hls.attachMedia(video);
-
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          if (iptal) return;
-          oynatildi = true;
-          setDurum("oynatiliyor");
-          setMesaj(null);
-          video.play().catch(() => {
-            // Tarayıcı otomatik oynatmayı engellediyse kullanıcı oynat tuşuna basar.
-          });
-        });
-
-        hls.on(Hls.Events.ERROR, (_olay, veri) => {
-          if (!veri.fatal || !hls) return;
-          // Liste HLS değil (ham MPEG-TS vb.): boşuna yeniden denemeden doğrudan mpegts.js'e geç.
-          if (veri.details === Hls.ErrorDetails.MANIFEST_PARSING_ERROR) {
-            mpegtsDene();
-            return;
-          }
-          if (yenidenDeneme >= EN_FAZLA_YENIDEN_DENEME) {
-            mpegtsDene();
-            return;
-          }
-          yenidenDeneme++;
-          if (veri.type === Hls.ErrorTypes.NETWORK_ERROR) {
-            setMesaj(`Bağlantı koptu, yeniden bağlanılıyor (${yenidenDeneme}/${EN_FAZLA_YENIDEN_DENEME})...`);
-            hls.startLoad();
-          } else if (veri.type === Hls.ErrorTypes.MEDIA_ERROR) {
-            setMesaj(`Görüntü hatası, kurtarılıyor (${yenidenDeneme}/${EN_FAZLA_YENIDEN_DENEME})...`);
-            hls.recoverMediaError();
-          } else {
-            mpegtsDene();
-          }
-        });
-      } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-        video.src = url;
-        oynatildi = true;
-        setDurum("oynatiliyor");
-      } else {
-        hataGoster("Tarayıcınız bu yayın biçimini desteklemiyor.");
-      }
+      if (Hls.isSupported()) hlsOynat(url);
+      else if (v.canPlayType("application/vnd.apple.mpegurl")) nativeOynat(url);
+      else mpegtsOynat(url);
     })();
 
     return () => {
       iptal = true;
-      mp?.destroy();
-      if (zamanAsimi) clearTimeout(zamanAsimi);
-      if (kalpZamanlayici) clearInterval(kalpZamanlayici);
+      if (kalp) clearInterval(kalp);
+      temizle();
       if (oynatmaId) api(`/kanallar/yayin/${oynatmaId}`, undefined, "DELETE");
-      hls?.destroy();
-      hlsRef.current = null;
     };
   }, [id, tekrar]);
 
-  // Takılma ya da bitiş: önce aynı oynatıcıda yerinde kurtar, olmazsa tam yeniden başlat.
-  function yerindeKurtar() {
-    const v = videoRef.current;
-    const h = hlsRef.current;
-    const url = urlRef.current;
-    if (h && url) {
-      h.stopLoad();
-      h.loadSource(url);
-      h.startLoad();
-      v?.play().catch(() => {});
-      return;
-    }
-    if (v && url && v.src && !v.src.startsWith("blob:")) {
-      v.load();
-      v.play().catch(() => {});
-      return;
-    }
-    setTekrar((n) => n + 1);
-  }
-
-  // Yayın takıldıysa (zaman 12 sn ilerlemediyse) ya da bittiyse kurtar.
+  // Takılma (sayaç ilerlemiyor) ya da bitişte oynatıcıyı baştan kurar.
   useEffect(() => {
     if (durum !== "oynatiliyor") return;
-    let sonZaman = -1;
+    const v = videoRef.current;
+    if (!v) return;
+    let sonZaman = v.currentTime;
     let sonDegisim = Date.now();
     const kontrol = setInterval(() => {
-      const v = videoRef.current;
-      if (!v) return;
       if (v.paused) {
         sonDegisim = Date.now();
         return;
@@ -267,46 +185,44 @@ export default function Oynatici({ id }: { id: string }) {
         sonDegisim = Date.now();
         return;
       }
-      if (Date.now() - sonDegisim > 12000) {
-        sonDegisim = Date.now();
-        yerindeKurtar();
-      }
+      if (Date.now() - sonDegisim > TAKILMA_ESIGI_MS) setTekrar((n) => n + 1);
     }, 3000);
-    const bitti = () => yerindeKurtar();
-    const v = videoRef.current;
-    v?.addEventListener("ended", bitti);
+    const bitti = () => setTekrar((n) => n + 1);
+    v.addEventListener("ended", bitti);
     return () => {
       clearInterval(kontrol);
-      v?.removeEventListener("ended", bitti);
+      v.removeEventListener("ended", bitti);
     };
   }, [durum]);
 
   return (
     <div className="mx-auto max-w-5xl px-6 pb-24 pt-32">
       <h1 className="mb-6 text-2xl font-semibold">{kanal?.ad ?? "Kanal"}</h1>
-      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl">
+      <div className="relative overflow-hidden rounded-[var(--radius)] border border-[var(--border)] bg-black">
         <video ref={videoRef} controls playsInline className="aspect-video w-full bg-black" />
         {durum !== "oynatiliyor" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-slate-950/85 p-6 text-center backdrop-blur-sm">
-            {durum === "yukleniyor" && <p className="text-slate-300">Yayın hazırlanıyor...</p>}
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[var(--bg)]/90 p-6 text-center ">
+            {durum === "yukleniyor" && <p className="text-[var(--muted)]">Yayın hazırlanıyor...</p>}
             {durum === "hata" && (
               <>
-                <p className="max-w-md text-rose-200">{mesaj}</p>
+                <p role="alert" className="max-w-md text-[var(--danger)]">{mesaj}</p>
                 <div className="flex flex-wrap justify-center gap-3">
-                  <button type="button" onClick={() => setTekrar((n) => n + 1)} className="rounded-full bg-cyan-400 px-5 py-2 text-sm font-medium text-slate-950 hover:bg-cyan-300">
+                  <button type="button" onClick={() => setTekrar((n) => n + 1)} className="btn-primary !px-5 !py-2 text-sm">
                     Tekrar dene
                   </button>
-                  <a href="/kanallar" className="rounded-full border border-white/20 px-5 py-2 text-sm hover:bg-white/10">Kanallara dön</a>
+                  <a href="/kanallar" className="btn-secondary !px-5 !py-2 text-sm">
+                    Kanallara dön
+                  </a>
                 </div>
-                {mesaj?.includes("giriş") && <a href="/giris" className="text-sm text-cyan-300 hover:text-cyan-200">Giriş yap</a>}
-                {mesaj?.includes("paket") && <a href="/#paketler" className="text-sm text-cyan-300 hover:text-cyan-200">Paketlere bak</a>}
+                {mesaj?.includes("giriş") && <a href="/giris" className="text-sm text-[var(--accent)]">Giriş yap</a>}
+                {mesaj?.includes("paket") && <a href="/#paketler" className="text-sm text-[var(--accent)]">Paketlere bak</a>}
               </>
             )}
           </div>
         )}
       </div>
-      {durum === "oynatiliyor" && mesaj && <p className="mt-4 text-sm text-amber-300">{mesaj}</p>}
-      {kanal?.aciklama && <p className="mt-6 text-slate-400">{kanal.aciklama}</p>}
+      {durum === "oynatiliyor" && mesaj && <p className="mt-4 text-sm text-[var(--warning)]">{mesaj}</p>}
+      {kanal?.aciklama && <p className="mt-6 text-[var(--muted)]">{kanal.aciklama}</p>}
     </div>
   );
 }

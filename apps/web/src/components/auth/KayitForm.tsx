@@ -30,7 +30,7 @@ export default function KayitForm() {
       <Alan etiket="Ad Soyad" autoComplete="name" required minLength={2} value={form.ad} onChange={(e) => setForm({ ...form, ad: e.target.value })} />
       <Alan etiket="E-posta" type="email" autoComplete="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
       <Alan etiket="Şifre" type="password" autoComplete="new-password" required minLength={8} value={form.sifre} onChange={(e) => setForm({ ...form, sifre: e.target.value })} />
-      <p className="text-xs text-slate-500">En az 8 karakter; en az bir harf ve bir rakam içermelidir.</p>
+      <p className="text-xs text-[var(--muted)]">En az 8 karakter; en az bir harf ve bir rakam içermelidir.</p>
       <Dugme type="submit" disabled={yukleniyor}>{yukleniyor ? "Kaydediliyor..." : "Hesap Oluştur"}</Dugme>
     </form>
   );

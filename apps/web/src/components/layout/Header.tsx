@@ -19,25 +19,25 @@ export default function Header() {
   }
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-slate-950/60 backdrop-blur-md">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-[var(--bg)]/70 ">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <a href="/" className="font-semibold tracking-wide text-slate-100">IPTV Platform</a>
+        <a href="/" className="font-semibold tracking-wide text-[var(--text)]">IPTV Platform</a>
         <nav className="flex items-center gap-5 text-sm">
-          <a href="/kanallar" className="text-slate-300 hover:text-white">Kanallar</a>
-          <a href="/#paketler" className="text-slate-300 hover:text-white">Paketler</a>
+          <a href="/kanallar" className="text-[var(--muted)] hover:text-white">Kanallar</a>
+          <a href="/#paketler" className="text-[var(--muted)] hover:text-white">Paketler</a>
           {(durum === "giris" || durum === "yonetici") && (
             <>
-              {durum === "yonetici" && <a href="/yonetim" className="text-cyan-300 hover:text-cyan-200">Yönetim</a>}
-              <a href="/hesap" className="text-slate-300 hover:text-white">Hesabım</a>
-              <button type="button" onClick={cikis} className="rounded-full border border-white/20 px-4 py-2 text-slate-200 hover:bg-white/10">
+              {durum === "yonetici" && <a href="/yonetim" className="text-[var(--accent)] hover:text-[var(--accent)]">Yönetim</a>}
+              <a href="/hesap" className="text-[var(--muted)] hover:text-white">Hesabım</a>
+              <button type="button" onClick={cikis} className="btn-secondary !px-4 !py-2 text-sm">
                 Çıkış
               </button>
             </>
           )}
           {durum === "cikis" && (
             <>
-              <a href="/giris" className="text-slate-300 hover:text-white">Giriş</a>
-              <a href="/kayit" className="rounded-full bg-cyan-400 px-4 py-2 font-medium text-slate-950 hover:bg-cyan-300">Kayıt Ol</a>
+              <a href="/giris" className="text-[var(--muted)] hover:text-white">Giriş</a>
+              <a href="/kayit" className="btn-primary !px-4 !py-2 text-sm">Kayıt Ol</a>
             </>
           )}
         </nav>

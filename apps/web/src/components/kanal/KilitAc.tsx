@@ -25,9 +25,9 @@ export default function KilitAc({ kategoriler, tumu = false, onAcildi }: { kateg
   return (
     <div className="mb-8 rounded-2xl border border-amber-400/30 bg-amber-500/5 p-5">
       {tumu ? (
-        <p className="text-slate-100">Ebeveyn kilidi aktif: <span className="text-amber-200">tüm kanallar</span> gizli. Görmek için PIN girin.</p>
+        <p className="text-[var(--text)]">Ebeveyn kilidi aktif: <span className="text-[var(--warning)]">tüm kanallar</span> gizli. Görmek için PIN girin.</p>
       ) : (
-        <p className="text-slate-100">Ebeveyn kilidi aktif: <span className="text-amber-200">{kategoriler.join(", ")}</span> kategorileri gizli.</p>
+        <p className="text-[var(--text)]">Ebeveyn kilidi aktif: <span className="text-[var(--warning)]">{kategoriler.join(", ")}</span> kategorileri gizli.</p>
       )}
       <form onSubmit={gonder} className="mt-3 flex flex-wrap items-center gap-3">
         <input
@@ -37,12 +37,12 @@ export default function KilitAc({ kategoriler, tumu = false, onAcildi }: { kateg
           placeholder="PIN"
           value={pin}
           onChange={(e) => setPin(e.target.value)}
-          className="w-32 rounded-lg border border-white/10 bg-slate-900 px-3 py-2 text-sm outline-none focus:border-cyan-300/60"
+          className="w-32 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
         />
-        <button type="submit" disabled={islem} className="rounded-full bg-amber-400 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-amber-300 disabled:opacity-60">
+        <button type="submit" disabled={islem} className="rounded-full bg-amber-400 px-4 py-2 text-sm font-medium text-[var(--accent-ink)] hover:bg-amber-300 disabled:opacity-60">
           Kilidi aç (30 dk)
         </button>
-        {mesaj && <span className="text-sm text-rose-200">{mesaj}</span>}
+        {mesaj && <span className="text-sm text-[var(--danger)]">{mesaj}</span>}
       </form>
     </div>
   );

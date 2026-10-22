@@ -5,8 +5,8 @@ import { api } from "@/lib/api";
 
 type Durum = { aktif: boolean; kategoriler: string[]; tumKanallar: boolean };
 
-const INPUT = "w-full rounded-lg border border-white/10 bg-slate-900 px-3 py-2 text-sm outline-none focus:border-cyan-300/60";
-const BUTON = "rounded-full bg-cyan-400 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-cyan-300 disabled:opacity-60";
+const INPUT = "w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm outline-none focus:border-[var(--accent)]";
+const BUTON = "rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--accent-ink)] hover:bg-[var(--accent)] disabled:opacity-60";
 
 export default function EbeveynKontrolu() {
   const [durum, setDurum] = useState<Durum | null>(null);
@@ -72,17 +72,17 @@ export default function EbeveynKontrolu() {
     yukle();
   }
 
-  if (!durum) return <p className="text-slate-400">Ebeveyn ayarları yükleniyor...</p>;
+  if (!durum) return <p className="text-[var(--muted)]">Ebeveyn ayarları yükleniyor...</p>;
 
   return (
-    <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+    <section className="rounded-2xl border border-[var(--border)] bg-white/5 p-6">
       <h2 className="text-lg font-medium">Ebeveyn kontrolü</h2>
-      <p className="mt-1 text-sm text-slate-400">
+      <p className="mt-1 text-sm text-[var(--muted)]">
         Seçtiğiniz kategoriler ya da isterseniz tüm kanallar PIN girilmeden görünmez. Kilit açıldığında 30 dakika boyunca açık kalır.
       </p>
 
       {bilgi && (
-        <p role="alert" className={`mt-4 rounded-lg px-3 py-2 text-sm ${bilgi.tur === "hata" ? "bg-rose-500/10 text-rose-200" : "bg-emerald-500/10 text-emerald-200"}`}>
+        <p role="alert" className={`mt-4 rounded-lg px-3 py-2 text-sm ${bilgi.tur === "hata" ? "bg-rose-500/10 text-[var(--danger)]" : "bg-[var(--accent)] text-[var(--accent)]"}`}>
           {bilgi.metin}
         </p>
       )}
@@ -90,7 +90,7 @@ export default function EbeveynKontrolu() {
       {!duzenle && (
         <div className="mt-4 space-y-4">
           <p className="text-sm">
-            Durum: <span className={durum.aktif ? "text-emerald-300" : "text-slate-400"}>{durum.aktif ? "Açık" : "Kapalı"}</span>
+            Durum: <span className={durum.aktif ? "text-[var(--accent)]" : "text-[var(--muted)]"}>{durum.aktif ? "Açık" : "Kapalı"}</span>
             {durum.aktif && durum.tumKanallar && <> · Tüm kanallar gizli</>}
             {durum.aktif && !durum.tumKanallar && durum.kategoriler.length > 0 && <> · Kilitli: {durum.kategoriler.join(", ")}</>}
           </p>
@@ -99,7 +99,7 @@ export default function EbeveynKontrolu() {
               {durum.aktif ? "Ayarları değiştir" : "Ebeveyn kontrolünü aç"}
             </button>
             {durum.aktif && (
-              <button type="button" disabled={islem} onClick={kapat} className="rounded-full border border-white/20 px-4 py-2 text-sm text-slate-200 hover:bg-white/10">
+              <button type="button" disabled={islem} onClick={kapat} className="rounded-full border border-white/20 px-4 py-2 text-sm text-[var(--text)] hover:bg-white/10">
                 Kapat
               </button>
             )}
@@ -111,27 +111,27 @@ export default function EbeveynKontrolu() {
         <form onSubmit={kaydet} className="mt-4 space-y-4">
           {durum.aktif && (
             <label className="block">
-              <span className="mb-1 block text-xs text-slate-400">Mevcut PIN</span>
+              <span className="mb-1 block text-xs text-[var(--muted)]">Mevcut PIN</span>
               <input required inputMode="numeric" pattern="\d{4,6}" value={mevcutPin} onChange={(e) => setMevcutPin(e.target.value)} className={INPUT} />
             </label>
           )}
           <label className="block">
-            <span className="mb-1 block text-xs text-slate-400">Yeni PIN (4 ila 6 rakam)</span>
+            <span className="mb-1 block text-xs text-[var(--muted)]">Yeni PIN (4 ila 6 rakam)</span>
             <input required inputMode="numeric" pattern="\d{4,6}" value={yeniPin} onChange={(e) => setYeniPin(e.target.value)} className={INPUT} />
           </label>
-          <label className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-slate-200">
+          <label className="flex items-start gap-3 rounded-xl border border-[var(--border)] bg-white/5 p-3 text-sm text-[var(--text)]">
             <input type="checkbox" checked={tumKanallar} onChange={(e) => setTumKanallar(e.target.checked)} className="mt-1" />
             <span>
               Tüm kanalları gizle
-              <span className="block text-xs text-slate-400">Açıkken PIN girilene kadar hiçbir kanal listelenmez ve izlenemez. Aşağıdaki kategori seçimi bu durumda kullanılmaz.</span>
+              <span className="block text-xs text-[var(--muted)]">Açıkken PIN girilene kadar hiçbir kanal listelenmez ve izlenemez. Aşağıdaki kategori seçimi bu durumda kullanılmaz.</span>
             </span>
           </label>
           <div className={tumKanallar ? "pointer-events-none opacity-40" : ""}>
-            <span className="mb-2 block text-xs text-slate-400">Kilitlenecek kategoriler</span>
+            <span className="mb-2 block text-xs text-[var(--muted)]">Kilitlenecek kategoriler</span>
             <div className="flex flex-wrap gap-2">
-              {tumKategoriler.length === 0 && <p className="text-xs text-slate-500">Henüz kategori yok.</p>}
+              {tumKategoriler.length === 0 && <p className="text-xs text-[var(--muted)]">Henüz kategori yok.</p>}
               {tumKategoriler.map((k) => (
-                <button key={k} type="button" onClick={() => kategoriDegistir(k)} className={`rounded-full px-3 py-1.5 text-xs transition ${secilen.includes(k) ? "bg-cyan-400 text-slate-950" : "bg-white/5 text-slate-300 hover:bg-white/10"}`}>
+                <button key={k} type="button" onClick={() => kategoriDegistir(k)} className={`rounded-full px-3 py-1.5 text-xs transition ${secilen.includes(k) ? "bg-[var(--accent)] text-[var(--accent-ink)]" : "bg-white/5 text-[var(--muted)] hover:bg-white/10"}`}>
                   {k}
                 </button>
               ))}
@@ -139,7 +139,7 @@ export default function EbeveynKontrolu() {
           </div>
           <div className="flex gap-3">
             <button type="submit" disabled={islem} className={BUTON}>Kaydet</button>
-            <button type="button" onClick={() => setDuzenle(false)} className="rounded-full border border-white/20 px-4 py-2 text-sm text-slate-200 hover:bg-white/10">Vazgeç</button>
+            <button type="button" onClick={() => setDuzenle(false)} className="rounded-full border border-white/20 px-4 py-2 text-sm text-[var(--text)] hover:bg-white/10">Vazgeç</button>
           </div>
         </form>
       )}

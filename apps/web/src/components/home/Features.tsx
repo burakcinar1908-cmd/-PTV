@@ -45,10 +45,10 @@ export default function Features() {
           <div
             key={o.baslik}
             data-feature
-            className="rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-md transition hover:-translate-y-1 hover:border-cyan-300/40"
+            className="rounded-2xl border border-[var(--border)] bg-white/5 p-8  transition  hover:border-[var(--accent)]"
           >
             <h3 className="text-xl font-medium">{o.baslik}</h3>
-            <p className="mt-3 text-slate-400">{o.metin}</p>
+            <p className="mt-3 text-[var(--muted)]">{o.metin}</p>
           </div>
         ))}
       </div>

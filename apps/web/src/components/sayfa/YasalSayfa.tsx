@@ -4,7 +4,7 @@ export default function YasalSayfa({ baslik, children }: { baslik: string; child
   return (
     <main className="mx-auto max-w-3xl px-6 pb-24 pt-32">
       <h1 className="text-3xl font-semibold md:text-4xl">{baslik}</h1>
-      <div className="mt-8 space-y-5 leading-relaxed text-slate-300">{children}</div>
+      <div className="mt-8 space-y-5 leading-relaxed text-[var(--muted)]">{children}</div>
     </main>
   );
 }

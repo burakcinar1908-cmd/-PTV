@@ -42,10 +42,10 @@ export default function Plans() {
   return (
     <section id="paketler" className="mx-auto max-w-6xl px-6 py-24">
       <h2 className="text-3xl font-semibold md:text-4xl">Abonelik paketleri</h2>
-      <p className="mt-3 text-slate-400">Şu an demo sürümdesiniz. Tüm paketler ücretsiz ve ödeme alınmadan etkinleşir.</p>
+      <p className="mt-3 text-[var(--muted)]">Şu an demo sürümdesiniz. Tüm paketler ücretsiz ve ödeme alınmadan etkinleşir.</p>
 
       {mesaj && (
-        <p role="alert" className={`mt-6 rounded-xl border px-4 py-3 text-sm ${mesaj.tur === "hata" ? "border-rose-400/40 bg-rose-500/10 text-rose-200" : "border-emerald-400/40 bg-emerald-500/10 text-emerald-200"}`}>
+        <p role="alert" className={`mt-6 rounded-xl border px-4 py-3 text-sm ${mesaj.tur === "hata" ? "border-rose-400/40 bg-rose-500/10 text-[var(--danger)]" : "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent)]"}`}>
           {mesaj.metin}
         </p>
       )}
@@ -55,9 +55,9 @@ export default function Plans() {
           const ay = aySec(p);
           const sure = p.sureSecenekleri.find((s) => s.ay === ay);
           return (
-            <div key={p.id} className="flex flex-col rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-md">
+            <div key={p.id} className="flex flex-col rounded-2xl border border-[var(--border)] bg-white/5 p-8 ">
               <h3 className="text-xl font-medium">{p.ad}</h3>
-              <p className="mt-1 text-sm text-slate-400">{p.cihazSiniri} cihazda aynı anda izleme</p>
+              <p className="mt-1 text-sm text-[var(--muted)]">{p.cihazSiniri} cihazda aynı anda izleme</p>
 
               <div className="mt-5 flex flex-wrap gap-2">
                 {p.sureSecenekleri.map((s) => (
@@ -65,7 +65,7 @@ export default function Plans() {
                     key={s.ay}
                     type="button"
                     onClick={() => setSecilenAy({ ...secilenAy, [p.id]: s.ay })}
-                    className={`rounded-full px-3 py-1.5 text-xs transition ${ay === s.ay ? "bg-cyan-400 text-slate-950" : "bg-white/5 text-slate-300 hover:bg-white/10"}`}
+                    className={`rounded-full px-3 py-1.5 text-xs transition ${ay === s.ay ? "bg-[var(--accent)] text-[var(--accent-ink)]" : "bg-white/5 text-[var(--muted)] hover:bg-white/10"}`}
                   >
                     {sureAdi(s.ay)}
                   </button>
@@ -74,10 +74,10 @@ export default function Plans() {
 
               <p className="mt-6 text-3xl font-semibold">
                 {!sure || sure.fiyat === 0 ? "Ücretsiz" : `₺${sure.fiyat}`}
-                <span className="text-base text-slate-400"> / {ay} ay</span>
+                <span className="text-base text-[var(--muted)]"> / {ay} ay</span>
               </p>
 
-              <ul className="mt-6 flex-1 space-y-3 text-slate-300">
+              <ul className="mt-6 flex-1 space-y-3 text-[var(--muted)]">
                 {p.ozellikler.map((o) => (
                   <li key={o}>• {o}</li>
                 ))}
@@ -88,12 +88,12 @@ export default function Plans() {
                   type="button"
                   onClick={() => sec(p)}
                   disabled={islem !== null}
-                  className="mt-8 w-full rounded-full bg-cyan-400 py-3 font-medium text-slate-950 hover:bg-cyan-300 disabled:opacity-60"
+                  className="mt-8 w-full rounded-full bg-[var(--accent)] py-3 font-medium text-[var(--accent-ink)] hover:bg-[var(--accent)] disabled:opacity-60"
                 >
                   {islem === p.id ? "Etkinleştiriliyor..." : "Demo olarak seç"}
                 </button>
               ) : (
-                <a href="/giris" className="mt-8 block rounded-full bg-cyan-400 py-3 text-center font-medium text-slate-950 hover:bg-cyan-300">
+                <a href="/giris" className="mt-8 block rounded-full bg-[var(--accent)] py-3 text-center font-medium text-[var(--accent-ink)] hover:bg-[var(--accent)]">
                   Seçmek için giriş yapın
                 </a>
               )}
@@ -101,7 +101,7 @@ export default function Plans() {
           );
         })}
       </div>
-      {paketler.length === 0 && <p className="mt-8 text-slate-400">Paketler yükleniyor...</p>}
+      {paketler.length === 0 && <p className="mt-8 text-[var(--muted)]">Paketler yükleniyor...</p>}
     </section>
   );
 }

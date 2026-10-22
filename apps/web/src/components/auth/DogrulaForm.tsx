@@ -21,13 +21,13 @@ export default function DogrulaForm({ token }: { token: string }) {
     });
   }, [token]);
 
-  if (!durum) return <p className="text-slate-400">Doğrulanıyor...</p>;
+  if (!durum) return <p className="text-[var(--muted)]">Doğrulanıyor...</p>;
 
   return (
     <>
       <Bildirim tur={durum.tur}>{durum.mesaj}</Bildirim>
       <AltBaglanti>
-        <a href="/giris" className="text-cyan-300 hover:text-cyan-200">Giriş sayfasına git</a>
+        <a href="/giris" className="text-[var(--accent)] hover:text-[var(--accent)]">Giriş sayfasına git</a>
       </AltBaglanti>
     </>
   );

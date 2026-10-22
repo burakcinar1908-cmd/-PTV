@@ -1,4 +1,6 @@
 import { imzala } from "./sinyal.js";
+import { lookup } from "node:dns/promises";
+import net from "node:net";
 
 export function kodla(adres: string): string {
   return Buffer.from(adres, "utf8").toString("base64url");
@@ -58,4 +60,41 @@ export function m3u8Yeniden(metin: string, taban: string, kanalId: string, bitis
       return baglan(t);
     })
     .join("\n");
+}
+
+// IP adresinin iç ağa ait olup olmadığını kontrol eder. DNS çözümünden sonra çağrılır.
+export function ozelIpMi(ip: string): boolean {
+  const tip = net.isIP(ip);
+  if (tip === 4) {
+    const [a, b] = ip.split(".").map(Number);
+    if (a === 0 || a === 10 || a === 127) return true;
+    if (a === 169 && b === 254) return true;
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 192 && b === 168) return true;
+    if (a === 100 && b >= 64 && b <= 127) return true;
+    if (a >= 224) return true;
+    return false;
+  }
+  if (tip === 6) {
+    const kucuk = ip.toLowerCase();
+    if (kucuk === "::1" || kucuk === "::") return true;
+    const gomulu = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/.exec(kucuk);
+    if (gomulu) return ozelIpMi(gomulu[1]);
+    if (/^f[cd]/.test(kucuk) || kucuk.startsWith("fe80")) return true;
+    return false;
+  }
+  return true;
+}
+
+// Adres sözdizimi + DNS çözümü sonrası tüm IP'lerin genel olması şarttır.
+export async function guvenliAdresMi(adres: string): Promise<boolean> {
+  if (ozelAdresMi(adres)) return false;
+  const host = new URL(adres).hostname.replace(/^\[|\]$/g, "");
+  try {
+    const kayitlar = await lookup(host, { all: true, verbatim: true });
+    if (kayitlar.length === 0) return false;
+    return kayitlar.every((k) => !ozelIpMi(k.address));
+  } catch {
+    return false;
+  }
 }

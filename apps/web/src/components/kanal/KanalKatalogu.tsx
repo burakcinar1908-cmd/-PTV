@@ -27,8 +27,8 @@ function Cip({ aktif, onClick, children }: { aktif: boolean; onClick: () => void
       onClick={onClick}
       className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm transition ${
         aktif
-          ? "bg-cyan-400 font-medium text-slate-950 shadow-[0_0_20px_-4px_rgba(34,211,238,0.6)]"
-          : "bg-white/5 text-slate-300 ring-1 ring-white/10 hover:bg-white/10 hover:text-slate-100"
+          ? "bg-[var(--accent)] font-medium text-[var(--accent-ink)] "
+          : "bg-white/5 text-[var(--muted)] ring-1 ring-white/10 hover:bg-white/10 hover:text-[var(--text)]"
       }`}
     >
       {children}
@@ -125,11 +125,11 @@ export default function KanalKatalogu() {
   return (
     <div className="mx-auto max-w-6xl px-6 pb-24 pt-32">
       <h1 className="text-4xl font-semibold">Kanallar</h1>
-      <p className="mt-2 text-slate-400">Kategoriye göre göz atın veya kanal adıyla arayın.</p>
+      <p className="mt-2 text-[var(--muted)]">Kategoriye göre göz atın veya kanal adıyla arayın.</p>
 
       <div className="mt-8 space-y-3">
         <div className="relative">
-          <svg aria-hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500">
+          <svg aria-hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted)]">
             <circle cx="11" cy="11" r="7" />
             <path d="m20 20-3.5-3.5" />
           </svg>
@@ -138,14 +138,14 @@ export default function KanalKatalogu() {
             placeholder="Kanal ara..."
             value={arama}
             onChange={(e) => setArama(e.target.value)}
-            className="w-full rounded-2xl border border-white/10 bg-white/5 py-3 pl-11 pr-11 text-sm outline-none transition placeholder:text-slate-500 focus:border-cyan-300/60 focus:bg-white/10"
+            className="w-full rounded-2xl border border-[var(--border)] bg-white/5 py-3 pl-11 pr-11 text-sm outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:bg-white/10"
           />
           {arama && (
             <button
               type="button"
               onClick={() => setArama("")}
               aria-label="Aramayı temizle"
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full px-2 py-1 text-slate-400 hover:text-slate-100"
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full px-2 py-1 text-[var(--muted)] hover:text-[var(--text)]"
             >
               ✕
             </button>
@@ -153,7 +153,7 @@ export default function KanalKatalogu() {
         </div>
 
         <div>
-          <p className="mb-2 text-xs uppercase tracking-widest text-slate-500">Ülke / Grup</p>
+          <p className="mb-2 text-xs uppercase tracking-widest text-[var(--muted)]">Ülke / Grup</p>
           <div className={kaydirmaSatiri}>
             <Cip aktif={!grup} onClick={() => { setGrup(""); setKategori(""); }}>Tümü</Cip>
             {gruplar.adlar.map((g) => (
@@ -166,7 +166,7 @@ export default function KanalKatalogu() {
 
         {grup && altKategoriler.length > 0 && (
           <div>
-            <p className="mb-2 text-xs uppercase tracking-widest text-slate-500">{grup} kategorileri</p>
+            <p className="mb-2 text-xs uppercase tracking-widest text-[var(--muted)]">{grup} kategorileri</p>
             <div className={kaydirmaSatiri}>
               <Cip aktif={!kategori} onClick={() => setKategori("")}>Hepsi</Cip>
               {altKategoriler.map((k) => (
@@ -180,17 +180,17 @@ export default function KanalKatalogu() {
       </div>
 
       {bilgi && (
-        <p className="mt-4 text-sm text-amber-300">
+        <p className="mt-4 text-sm text-[var(--warning)]">
           {bilgi} <a href="/giris" className="underline">Giriş yap</a>
         </p>
       )}
 
       {sonIzlenen.length > 0 && !arama && !kategori && !grup && !tumKilitli && (
         <section className="mt-10">
-          <h2 className="mb-4 text-lg font-medium text-slate-300">Son izlenenler</h2>
+          <h2 className="mb-4 text-lg font-medium text-[var(--muted)]">Son izlenenler</h2>
           <div className="flex gap-3 overflow-x-auto pb-2">
             {sonIzlenen.map((k) => (
-              <a key={k.id} href={`/izle/${k.id}`} className="shrink-0 rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm hover:border-cyan-300/40">
+              <a key={k.id} href={`/izle/${k.id}`} className="shrink-0 rounded-xl border border-[var(--border)] bg-white/5 px-5 py-3 text-sm hover:border-[var(--accent)]">
                 {k.ad}
               </a>
             ))}
@@ -203,23 +203,23 @@ export default function KanalKatalogu() {
       )}
 
       {paketGerekli && (
-        <div className="mt-10 rounded-2xl border border-cyan-300/30 bg-cyan-400/5 p-6">
-          <p className="text-lg text-slate-100">Kanalları görmek için bir paket seçin.</p>
-          <p className="mt-1 text-sm text-slate-400">Her paket farklı bir kanal listesi sunar. Demo paketler ücretsizdir.</p>
-          <a href="/#paketler" className="mt-4 inline-block rounded-full bg-cyan-400 px-5 py-2 text-sm font-medium text-slate-950 hover:bg-cyan-300">Paketlere bak</a>
+        <div className="mt-10 rounded-2xl border border-[var(--accent)] bg-[var(--accent)] p-6">
+          <p className="text-lg text-[var(--text)]">Kanalları görmek için bir paket seçin.</p>
+          <p className="mt-1 text-sm text-[var(--muted)]">Her paket farklı bir kanal listesi sunar. Demo paketler ücretsizdir.</p>
+          <a href="/#paketler" className="mt-4 inline-block rounded-full bg-[var(--accent)] px-5 py-2 text-sm font-medium text-[var(--accent-ink)] hover:bg-[var(--accent)]">Paketlere bak</a>
         </div>
       )}
 
       <section className="mt-10">
         {!yukleniyor && !hata && kanallar.length > 0 && (
-          <p className="mb-4 text-xs uppercase tracking-widest text-slate-500">
+          <p className="mb-4 text-xs uppercase tracking-widest text-[var(--muted)]">
             {kanallar.length} kanal{kategori ? ` · ${kategori}` : grup ? ` · ${grup}` : ""}
           </p>
         )}
-        {hata && <p role="alert" className="rounded-xl border border-rose-400/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{hata}</p>}
-        {yukleniyor && !hata && <p className="text-slate-400">Kanallar yükleniyor...</p>}
+        {hata && <p role="alert" className="rounded-xl border border-rose-400/40 bg-rose-500/10 px-4 py-3 text-sm text-[var(--danger)]">{hata}</p>}
+        {yukleniyor && !hata && <p className="text-[var(--muted)]">Kanallar yükleniyor...</p>}
         {!yukleniyor && !hata && !tumKilitli && kanallar.length === 0 && (
-          <p className="text-slate-400">Aramanızla eşleşen kanal bulunamadı.</p>
+          <p className="text-[var(--muted)]">Aramanızla eşleşen kanal bulunamadı.</p>
         )}
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {kanallar.map((kanal) => (
