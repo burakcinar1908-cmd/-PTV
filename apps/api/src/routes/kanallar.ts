@@ -158,6 +158,9 @@ router.get(
       throw new HttpHata(404, "Kanal bulunamadı.");
     }
 
+    // Aynı kanalın önceki oturumları (yeniden yükleme, takılma kurtarma) sayılmaz, temizlenir.
+    await IzlemeOturumu.deleteMany({ userId: erisim.kullaniciId, kanalId });
+
     if (!erisim.yonetici) {
       const aktifIzleme = await IzlemeOturumu.countDocuments({
         userId: erisim.kullaniciId,
