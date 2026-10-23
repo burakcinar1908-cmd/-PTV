@@ -1,0 +1,6 @@
+name = "iptv-stream"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+[vars]
+WEB_ORIGIN = "https://ptv-burakcinar1908-9090s-projects.vercel.app"

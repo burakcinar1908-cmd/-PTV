@@ -11,7 +11,7 @@ import { asyncHandler } from "../middleware/asyncHandler.js";
 import { yayinTuru } from "../services/m3u.js";
 import { requireAuth } from "../middleware/auth.js";
 import { erisimiCoz, type Erisim } from "../services/erisim.js";
-import { imzala } from "../services/sinyal.js";
+import { linkKapat } from "../services/linkKapak.js";
 import { z } from "zod";
 
 const router = Router();
@@ -175,13 +175,13 @@ router.get(
     const oynatmaId = rastgeleToken(16);
     await IzlemeOturumu.create({ userId: erisim.kullaniciId, kanalId, oynatmaId, sonKalp: new Date() });
 
-    const id = String(kanalId);
-    const bitis = Date.now() + YAYIN_SURESI_MS;
-    const sig = imzala(env.STREAM_SIGNING_SECRET, id, bitis);
     const kanalYayin = await Channel.findById(kanalId).select("+yayinUrl").lean();
+    const hedef = kanalYayin?.yayinUrl ?? "";
+    if (!hedef) throw new HttpHata(404, "Kanal bulunamadı.");
+    const token = linkKapat(env.STREAM_SIGNING_SECRET, { u: hedef, e: Date.now() + YAYIN_SURESI_MS });
     res.json({
-      tur: yayinTuru(kanalYayin?.yayinUrl ?? ""),
-      url: `${env.STREAM_PUBLIC_URL}/yayin/${id}?bitis=${bitis}&sig=${sig}`,
+      tur: yayinTuru(hedef),
+      url: `${env.STREAM_PUBLIC_URL}/y/${token}`,
       sureSaniye: YAYIN_SURESI_MS / 1000,
       oynatmaId,
       kalpSaniye: KALP_ARALIGI_SANIYE,
