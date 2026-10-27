@@ -18,7 +18,7 @@ export function Alan({ etiket, ...props }: InputHTMLAttributes<HTMLInputElement>
       <span className="mb-1.5 block text-sm text-[var(--muted)]">{etiket}</span>
       <input
         {...props}
-        className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)]/60 px-4 py-3 text-[var(--text)] outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]"
+        className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-[var(--text)] outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]"
       />
     </label>
   );
@@ -36,7 +36,7 @@ export function Dugme({ children, ...props }: { children: ReactNode; disabled?: 
 }
 
 export function Bildirim({ tur, children }: { tur: "hata" | "basari"; children: ReactNode }) {
-  const renk = tur === "hata" ? "border-rose-400/40 bg-rose-500/10 text-[var(--danger)]" : "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent)]";
+  const renk = tur === "hata" ? "border-rose-400/40 bg-rose-500/10 text-[var(--danger)]" : "border-[var(--ok)] bg-[var(--ok-bg)] text-[var(--ok)]";
   return <div role="alert" className={`mb-5 rounded-xl border px-4 py-3 text-sm ${renk}`}>{children}</div>;
 }
 

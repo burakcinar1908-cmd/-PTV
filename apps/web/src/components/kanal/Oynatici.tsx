@@ -195,34 +195,73 @@ export default function Oynatici({ id }: { id: string }) {
     };
   }, [durum]);
 
+  const [kopyalandi, setKopyalandi] = useState(false);
+
+  async function kopyala() {
+    try {
+      await navigator.clipboard.writeText(`Kanal: ${id}\nSaat: ${new Date().toISOString()}\nHata: ${mesaj ?? "bilinmiyor"}`);
+      setKopyalandi(true);
+    } catch {
+      setKopyalandi(false);
+    }
+  }
+
   return (
-    <div className="mx-auto max-w-5xl px-6 pb-24 pt-32">
-      <h1 className="mb-6 text-2xl font-semibold">{kanal?.ad ?? "Kanal"}</h1>
-      <div className="relative overflow-hidden rounded-[var(--radius)] border border-[var(--border)] bg-black">
+    <div className="mx-auto max-w-5xl px-6 pb-24 pt-8">
+      <a href="/kanallar" className="inline-flex min-h-[44px] items-center text-[var(--muted)] hover:text-[var(--text)]">
+        Kanallara dön
+      </a>
+      <h1 className="mt-2 text-4xl md:text-5xl">{kanal?.ad ?? "Kanal"}</h1>
+      {kanal?.kategori && <p className="mt-1 text-[var(--muted)]">{kanal.kategori}</p>}
+
+      <div className="relative mt-6 overflow-hidden rounded-xl border border-[var(--border)] bg-black" aria-busy={durum === "yukleniyor"}>
         <video ref={videoRef} controls playsInline className="aspect-video w-full bg-black" />
         {durum !== "oynatiliyor" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[var(--bg)]/90 p-6 text-center ">
-            {durum === "yukleniyor" && <p className="text-[var(--muted)]">Yayın hazırlanıyor...</p>}
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[var(--bg)] p-6 text-center">
+            {durum === "yukleniyor" && (
+              <>
+                <span aria-hidden="true" className="don h-8 w-8 rounded-full border-2 border-[var(--border)] border-t-[var(--accent)]" />
+                <p role="status" className="text-[var(--muted)]">
+                  Yayın hazırlanıyor
+                </p>
+              </>
+            )}
             {durum === "hata" && (
               <>
-                <p role="alert" className="max-w-md text-[var(--danger)]">{mesaj}</p>
+                <h2 className="text-3xl">Yayın açılamadı</h2>
+                <p role="alert" className="max-w-md text-[var(--danger)]">
+                  {mesaj}
+                </p>
                 <div className="flex flex-wrap justify-center gap-3">
-                  <button type="button" onClick={() => setTekrar((n) => n + 1)} className="btn-primary !px-5 !py-2 text-sm">
-                    Tekrar dene
+                  <button type="button" onClick={() => setTekrar((n) => n + 1)} className="btn-primary">
+                    Yeniden dene
                   </button>
-                  <a href="/kanallar" className="btn-secondary !px-5 !py-2 text-sm">
-                    Kanallara dön
-                  </a>
+                  <button type="button" onClick={kopyala} className="btn-secondary">
+                    {kopyalandi ? "Kopyalandı" : "Hata ayrıntılarını kopyala"}
+                  </button>
                 </div>
-                {mesaj?.includes("giriş") && <a href="/giris" className="text-sm text-[var(--accent)]">Giriş yap</a>}
-                {mesaj?.includes("paket") && <a href="/#paketler" className="text-sm text-[var(--accent)]">Paketlere bak</a>}
+                {mesaj?.includes("giriş") && (
+                  <a href="/giris" className="text-[var(--accent)] underline underline-offset-4">
+                    Giriş yap
+                  </a>
+                )}
+                {mesaj?.includes("paket") && (
+                  <a href="/#paketler" className="text-[var(--accent)] underline underline-offset-4">
+                    Paketleri incele
+                  </a>
+                )}
               </>
             )}
           </div>
         )}
       </div>
-      {durum === "oynatiliyor" && mesaj && <p className="mt-4 text-sm text-[var(--warning)]">{mesaj}</p>}
-      {kanal?.aciklama && <p className="mt-6 text-[var(--muted)]">{kanal.aciklama}</p>}
+
+      {durum === "oynatiliyor" && mesaj && (
+        <p role="status" className="mt-4 text-[0.9375rem] text-[var(--warning)]">
+          {mesaj}
+        </p>
+      )}
+      {kanal?.aciklama && <p className="mt-6 max-w-[65ch] text-[var(--muted)]">{kanal.aciklama}</p>}
     </div>
   );
 }

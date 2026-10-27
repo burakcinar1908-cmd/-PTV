@@ -2,34 +2,105 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Tasarım tokenları: DESIGN.md ile birebir. Renk değişikliği buradan yapılır. */
+/* Tokenlar: DESIGN.md ile birebir. Renk ve yazı tipi değişikliği yalnızca burada yapılır. */
 :root {
   color-scheme: dark;
-  --bg: #05060a;
-  --surface: #0b0d14;
-  --text: #f5f7fa;
-  --muted: #94a3b8;
-  --accent: #22d3ee;
-  --accent-hover: #67e8f9;
-  --accent-ink: #020617;
-  --danger: #fda4af;
-  --warning: #fcd34d;
-  --border: rgba(255, 255, 255, 0.1);
+  --bg: #0d2b33;
+  --surface: #12363f;
+  --raised: #184552;
+  --border: rgba(234, 246, 244, 0.14);
+  --text: #eaf6f4;
+  --muted: #9fc3c6;
+  --accent: #ffc233;
+  --accent-hover: #ffd466;
+  --accent-ink: #1a1400;
+  --danger: #ffa89b;
+  --warning: #ffd466;
+  --ok: #8fe3b8;
+  --ok-bg: rgba(143, 227, 184, 0.12);
   --radius: 12px;
+  --font-display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
-body {
-  background: var(--bg);
-  color: var(--text);
+@layer base {
+  html {
+    background: var(--bg);
+    scroll-padding-top: 5rem;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
 }
 
 @layer components {
   .btn-primary {
-    @apply rounded-full bg-[var(--accent)] px-6 py-3 font-medium text-[var(--accent-ink)] transition duration-200 hover:bg-[var(--accent-hover)] active:scale-[0.96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)];
+    @apply inline-flex min-h-[44px] items-center justify-center rounded-lg bg-[var(--accent)] px-5 font-medium text-[var(--accent-ink)] transition duration-150 ease-out hover:bg-[var(--accent-hover)] active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-60;
   }
   .btn-secondary {
-    @apply rounded-full border border-[var(--border)] bg-white/5 px-6 py-3 text-[var(--text)] transition duration-200 hover:bg-white/10 active:scale-[0.96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)];
+    @apply inline-flex min-h-[44px] items-center justify-center rounded-lg border border-[var(--border)] px-5 font-medium text-[var(--text)] transition duration-150 ease-out hover:border-[var(--muted)] active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-60;
   }
+  .atla {
+    @apply absolute left-4 top-2 z-50 -translate-y-20 rounded-lg bg-[var(--accent)] px-4 py-2 font-medium text-[var(--accent-ink)] focus-visible:translate-y-0;
+  }
+}
+
+.nav-bag[aria-current="page"] {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 8px;
+}
+
+details[open] > summary .faq-arti {
+  transform: rotate(45deg);
+}
+
+/* Tek orkestre edilen an: ana sayfada test görüntüsü bir kez "açılır". */
+@keyframes ekran-ac {
+  from {
+    opacity: 0;
+    transform: scaleY(0.04);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+.ekran-ac {
+  animation: ekran-ac 300ms ease-out both;
+}
+
+/* İşlevsel döngü: yayın hazırlanırken gösterilir, anlam metinle de verilir. */
+@keyframes don {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.don {
+  animation: don 900ms linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

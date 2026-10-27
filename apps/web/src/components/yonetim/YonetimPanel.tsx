@@ -21,7 +21,7 @@ const IKINCIL = "rounded-full border border-white/20 px-4 py-2 text-sm text-[var
 function BilgiKutusu({ bilgi }: { bilgi: Bilgi }) {
   if (!bilgi) return null;
   return (
-    <p role="alert" className={`mb-4 rounded-xl border px-4 py-3 text-sm ${bilgi.tur === "hata" ? "border-rose-400/40 bg-rose-500/10 text-[var(--danger)]" : "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent)]"}`}>
+    <p role="alert" className={`mb-4 rounded-xl border px-4 py-3 text-sm ${bilgi.tur === "hata" ? "border-rose-400/40 bg-rose-500/10 text-[var(--danger)]" : "border-[var(--ok)] bg-[var(--ok-bg)] text-[var(--ok)]"}`}>
       {bilgi.metin}
     </p>
   );
@@ -46,10 +46,10 @@ export default function YonetimPanel() {
     });
   }, []);
 
-  if (yetki === "yukleniyor") return <p className="px-6 pt-32 text-[var(--muted)]">Yükleniyor...</p>;
+  if (yetki === "yukleniyor") return <p className="px-6 pt-12 text-[var(--muted)]">Yükleniyor...</p>;
   if (yetki === "yok") {
     return (
-      <div className="mx-auto max-w-md px-6 pt-32">
+      <div className="mx-auto max-w-md px-6 pt-12">
         <BilgiKutusu bilgi={{ tur: "hata", metin: "Bu sayfaya yalnızca yöneticiler erişebilir." }} />
         <a href="/giris" className="text-[var(--accent)] hover:text-[var(--accent)]">Giriş yap</a>
       </div>
@@ -65,7 +65,7 @@ export default function YonetimPanel() {
   ];
 
   return (
-    <div className="mx-auto max-w-6xl px-6 pb-24 pt-32">
+    <div className="mx-auto max-w-6xl px-6 pb-24 pt-12">
       <h1 className="text-3xl font-semibold">Yönetim Paneli</h1>
       <div className="mt-6 flex flex-wrap gap-2">
         {sekmeler.map((s) => (
@@ -602,7 +602,7 @@ function Destek() {
       {liste.length === 0 && <p className="text-[var(--muted)]">Henüz mesaj yok.</p>}
       <div className="space-y-3">
         {liste.map((m) => (
-          <div key={m.id} className={`rounded-xl border p-4 ${m.durum === "yeni" ? "border-[var(--accent)] bg-[var(--accent)]" : "border-[var(--border)] bg-[var(--surface)]"}`}>
+          <div key={m.id} className={`rounded-xl border p-4 ${m.durum === "yeni" ? "border-[var(--accent)] bg-[var(--raised)]" : "border-[var(--border)] bg-[var(--surface)]"}`}>
             <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--muted)]">
               <span>{m.ad}{m.email ? ` · ${m.email}` : ""}</span>
               <span>{new Date(m.tarih).toLocaleString("tr-TR")}</span>
@@ -610,7 +610,7 @@ function Destek() {
             <p className="mt-2 text-[var(--text)]">{m.mesaj}</p>
 
             {m.yanit && (
-              <div className="mt-3 rounded-lg border border-[var(--accent)] bg-[var(--accent)] p-3 text-sm text-[var(--text)]">
+              <div className="mt-3 rounded-lg border border-[var(--accent)] bg-[var(--raised)] p-3 text-sm text-[var(--text)]">
                 <p className="mb-1 text-xs text-[var(--accent)]">
                   Yanıt{m.yanitTarih ? ` · ${new Date(m.yanitTarih).toLocaleString("tr-TR")}` : ""}
                 </p>

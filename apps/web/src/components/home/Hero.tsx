@@ -1,65 +1,50 @@
-"use client";
+// Televizyonun en tanıdık görüntüsü: test yayını. Tamamen CSS ile çizilir, dosya ya da kütüphane gerektirmez.
+const CUBUKLAR = ["#bfbfbf", "#bfbf30", "#30bfbf", "#30bf30", "#bf30bf", "#bf3030", "#3030bf"];
+const ALT_CUBUKLAR = ["#3030bf", "#000000", "#bf30bf", "#000000", "#30bfbf", "#000000", "#bfbfbf"];
 
-import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import HeroSceneLoader from "@/components/scene/HeroSceneLoader";
+function seritGradyani(renkler: string[]): string {
+  const adim = 100 / renkler.length;
+  const duraklar = renkler.map((r, i) => `${r} ${(i * adim).toFixed(3)}% ${((i + 1) * adim).toFixed(3)}%`);
+  return `linear-gradient(90deg, ${duraklar.join(", ")})`;
+}
 
-export default function Hero() {
-  const root = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    // Kullanıcı hareket azaltmayı seçtiyse giriş animasyonu hiç çalışmaz.
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const ctx = gsap.context(() => {
-      gsap.from("[data-hero-item]", {
-        y: 12,
-        opacity: 0,
-        duration: 0.4,
-        ease: "power2.out",
-        stagger: 0.1,
-      });
-    }, root);
-    return () => ctx.revert();
-  }, []);
-
+function TestGoruntusu() {
   return (
-    <section
-      ref={root}
-      className="relative flex min-h-screen items-center overflow-hidden"
-    >
-      <HeroSceneLoader />
-
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#05060a] via-transparent to-transparent" />
-
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-6">
-        <p data-hero-item className="mb-4 text-sm tracking-[0.3em] text-[var(--accent)]">
-          TÜRKİYE'NİN CANLI YAYIN PLATFORMU
-        </p>
-        <h1 data-hero-item className="max-w-3xl text-5xl font-semibold leading-tight md:text-7xl">
-          Sevdiğiniz kanallar,
-          <span className="block text-[var(--accent)]">
-            tek ekranda.
+    <div aria-hidden="true" className="ekran-ac rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-1.5">
+      <div className="relative aspect-video overflow-hidden rounded-[10px] bg-black">
+        <div className="absolute inset-x-0 top-0 h-[68%]" style={{ background: seritGradyani(CUBUKLAR) }} />
+        <div className="absolute inset-x-0 top-[68%] h-[8%]" style={{ background: seritGradyani(ALT_CUBUKLAR) }} />
+        <div className="absolute inset-x-0 bottom-0 flex h-[24%] items-center justify-between bg-black px-4">
+          <span className="font-display text-xl font-semibold text-white md:text-2xl">IPTV Platform</span>
+          <span className="inline-flex items-center gap-2 text-sm text-white">
+            <span className="h-2.5 w-2.5 rounded-full bg-[var(--accent)]" />
+            Canlı
           </span>
-        </h1>
-        <p data-hero-item className="mt-6 max-w-xl text-lg text-[var(--muted)]">
-          Kategorilere göre kanal listeleme, elektronik program rehberi ve
-          kesintisiz HD izleme deneyimi. Hemen başlayın.
-        </p>
-        <div data-hero-item className="mt-10 flex flex-wrap gap-4">
-          <a
-            href="/kayit"
-            className="rounded-full bg-[var(--accent)] px-7 py-3 font-medium text-[var(--accent-ink)] transition duration-200 hover:bg-[var(--accent)] active:scale-[0.96]"
-          >
-            Ücretsiz Dene
-          </a>
-          <a
-            href="#paketler"
-            className="rounded-full border border-white/20 bg-white/5 px-7 py-3 backdrop-blur transition hover:bg-white/10"
-          >
-            Paketleri İncele
-          </a>
         </div>
       </div>
+    </div>
+  );
+}
+
+export default function Hero() {
+  return (
+    <section className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-16 md:grid-cols-[1.1fr_1fr] md:py-24">
+      <div>
+        <h1 className="text-6xl md:text-8xl">Canlı yayın, tek ekranda.</h1>
+        <p className="mt-6 max-w-[34ch] text-lg text-[var(--muted)]">
+          Paketinize dahil kanalları ülkeye ve türe göre bulun, favorilerinize ekleyin ve telefonda ya da bilgisayarda izleyin.
+        </p>
+        <div className="mt-8 flex flex-wrap gap-3">
+          <a href="/kanallar" className="btn-primary">
+            Kanalları aç
+          </a>
+          <a href="#paketler" className="btn-secondary">
+            Paketleri incele
+          </a>
+        </div>
+        <p className="mt-6 text-sm text-[var(--muted)]">Demo sürümü: paketler şu an ücretsiz.</p>
+      </div>
+      <TestGoruntusu />
     </section>
   );
 }

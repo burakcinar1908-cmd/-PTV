@@ -1,48 +1,37 @@
 # DESIGN.md
 
-Koyu, sakin, teknik. Tek vurgu rengi, bol boşluk, kutu içinde kutu yok.
+Konu: Türkçe canlı yayın platformu. İş: kanalı hızla bulmak ve izlemek. Dil: televizyonun kendi görsel dili (test yayını, kanal etiketi), sakin ve okunaklı bir ekran.
 
-## Renk
+## Renk (60 / 30 / 10)
 | Token | Değer | Rol |
 |---|---|---|
-| --bg | #05060a | sayfa zemini |
-| --surface | #0b0d14 | kart ve panel zemini |
-| --text | #f5f7fa | ana metin (kontrast > 15:1) |
-| --muted | #94a3b8 | ikincil metin (kontrast > 4.5:1) |
-| --accent | #22d3ee | birincil buton, bağlantı, odak halkası |
-| --accent-hover | #67e8f9 | birincil butonun üzeri |
-| --accent-ink | #020617 | accent üzerindeki metin |
-| --danger | #fda4af | hata metni |
-| --warning | #fcd34d | uyarı metni |
-| --border | white 10% | ayırıcı çizgi |
+| --bg | #0d2b33 | zemin (yüzde 60) |
+| --surface | #12363f | kart, panel (yüzde 30) |
+| --raised | #184552 | bir kademe yüksek yüzey |
+| --text | #eaf6f4 | ana metin |
+| --muted | #9fc3c6 | ikincil metin |
+| --accent | #ffc233 | birincil buton, odak, aktif durum (yüzde 10) |
+| --accent-ink | #1a1400 | accent üzerindeki metin |
+| --danger / --warning / --ok | #ffa89b / #ffd466 / #8fe3b8 | hata / uyarı / başarı metni |
 
-Açık tema yok. Renkleri yalnızca tokenlardan kullan, sayfada ham renk yazma.
+Renk yalnızca tokenlardan kullanılır. Değişken renklere Tailwind ile /NN opaklık verilmez (v3'te sessizce düşer); gerekirse ayrı token tanımlanır (--ok-bg).
 
 ## Tipografi
-- Sistem sans (Inter yerine yerleşik yazı tipi, dosya yüklemez).
-- Başlık: 36-72px, semibold, satır aralığı 1.1-1.2.
-- Gövde: 16px, satır aralığı 1.6, en fazla 75 karakter genişlik.
-- Etiket (eyebrow): 14px, geniş harf aralığı, muted renk.
+- Başlık: Barlow Condensed 600. Gövde: IBM Plex Sans 400 / 500 / 600. Uygulama genelinde en fazla üç ağırlık.
+- Boyutlar: gövde 16px, ikincil 14-15px, meta 12px altına inilmez. Başlık satır aralığı 1.1, gövde 1.6.
+- Satır uzunluğu en fazla 65 karakter.
 
-## Boşluk ve şekil
-- Taban 4px, kullanılan adımlar: 8, 12, 16, 24, 32, 48, 96.
-- Bölüm dikey boşluğu: 96px masaüstü, 64px mobil.
-- İçerik genişliği: max 1152px (max-w-6xl), oynatıcı max 1024px.
-- Radius: 12px kart, tam yuvarlak buton (rounded-full).
-- Gölge: yok. Derinlik zemin farkıyla verilir.
-
-## Bileşenler
-- Birincil buton (.btn-primary): accent zemin, hover accent-hover, basınca scale 0.96.
-- İkincil buton (.btn-secondary): şeffaf zemin, border, hover hafif dolgu.
-- Odak: her etkileşimli öğede 2px accent halka (focus-visible).
-- Kart: surface zemin, border, radius 12px.
+## Yerleşim ve şekil
+- Sol hizalı, max-w-6xl. Boşluk 4 / 8 / 12 / 16 / 24 / 32 / 48 / 64.
+- Radius: kart 12px, buton 8px, iç içe yüzeylerde eş merkezli (dış = iç + dolgu).
+- Derinlik 1px kenarlıkla verilir, gölge yok. Cam efekti ve gradyan metin yok.
+- Etkileşimli öğeler en az 44x44px. Üst menü sticky, içerik altından başlar.
 
 ## Hareket
-- Giriş: opacity 0→1, translateY 12px→0, 400ms, power2.out, öğeler arası 100ms.
-- Çıkış: 150ms, -12px sabit. Bounce ve overshoot yok.
-- İlk yüklemede hero animasyonu bir kez oynar, sonra tekrar etmez.
-- prefers-reduced-motion: tüm animasyonlar kapanır (globals.css ve Hero).
+- Süre: 100 / 150 / 200 / 300ms, yalnızca transform ve opacity.
+- Tek orkestre an: ana sayfada test görüntüsü 300ms'de "açılır".
+- Basma geri bildirimi scale 0.96. prefers-reduced-motion'da her şey kapanır.
 
-## Yasak
-- Mor-mavi gradyan, glassmorphism, gradyan metin (Hero'daki vurgu hariç, bir sonraki turda kaldırılacak).
-- Emoji ikon. Tek ikon seti kullan.
+## Desenler
+- Ana sayfa: pazarlama kompozisyonu. Kanallar: liste/dizin. İzle: ayrıntı. Giriş/kayıt: form.
+- Buton etiketleri fiil ile başlar (Kanalları aç, Paketi etkinleştir). Hata metni kullanıcıyı suçlamaz ve bir sonraki adımı verir.

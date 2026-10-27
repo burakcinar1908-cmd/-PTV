@@ -8,28 +8,30 @@ type Props = {
 
 export default function KanalKarti({ kanal, favori, onFavori }: Props) {
   return (
-    <article className="group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-white/5 transition duration-300  hover:border-[var(--accent)] ">
+    <article className="relative overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] transition-colors duration-150 hover:border-[var(--accent)]">
       <a href={`/izle/${kanal.id}`} className="block">
-        <div className="flex aspect-video items-center justify-center">
+        <div className="flex aspect-video items-center justify-center bg-[var(--bg)]">
           {kanal.logo ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={kanal.logo} alt={kanal.ad} loading="lazy" className="max-h-20 max-w-[70%] object-contain" />
+            <img src={kanal.logo} alt="" loading="lazy" decoding="async" className="max-h-[70%] max-w-[70%] object-contain" />
           ) : (
-            <span className="text-4xl font-semibold text-[var(--accent)]">{kanal.ad.charAt(0)}</span>
+            <span aria-hidden="true" className="font-display text-5xl font-semibold text-[var(--accent)]">
+              {kanal.ad.charAt(0)}
+            </span>
           )}
         </div>
         <div className="p-4">
-          <span className="text-xs uppercase tracking-widest text-[var(--accent)]">{kanal.kategori}</span>
-          <h3 className="mt-1 font-medium text-[var(--text)]">{kanal.ad}</h3>
+          <p className="text-sm text-[var(--muted)]">{kanal.kategori}</p>
+          <h3 className="mt-1 font-sans text-base font-medium leading-snug">{kanal.ad}</h3>
         </div>
       </a>
       {favori !== undefined && (
         <button
           type="button"
           onClick={onFavori}
-          aria-label={favori ? "Favorilerden çıkar" : "Favorilere ekle"}
-          disabled={favori === null}
-          className="absolute right-3 top-3 rounded-full bg-[var(--bg)]/80 px-3 py-1.5 text-sm transition hover:bg-[var(--bg)] disabled:opacity-50"
+          aria-pressed={favori === true}
+          aria-label={favori ? `${kanal.ad} favorilerden çıkar` : `${kanal.ad} favorilere ekle`}
+          className="absolute right-2 top-2 inline-flex h-11 w-11 items-center justify-center rounded-lg bg-[var(--bg)] text-lg text-[var(--text)] transition-colors duration-150 hover:text-[var(--accent)]"
         >
           {favori ? "★" : "☆"}
         </button>

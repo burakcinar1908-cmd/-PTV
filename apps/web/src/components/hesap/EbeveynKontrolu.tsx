@@ -82,7 +82,7 @@ export default function EbeveynKontrolu() {
       </p>
 
       {bilgi && (
-        <p role="alert" className={`mt-4 rounded-lg px-3 py-2 text-sm ${bilgi.tur === "hata" ? "bg-rose-500/10 text-[var(--danger)]" : "bg-[var(--accent)] text-[var(--accent)]"}`}>
+        <p role="alert" className={`mt-4 rounded-lg px-3 py-2 text-sm ${bilgi.tur === "hata" ? "bg-rose-500/10 text-[var(--danger)]" : "bg-[var(--ok-bg)] text-[var(--ok)]"}`}>
           {bilgi.metin}
         </p>
       )}
