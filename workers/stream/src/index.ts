@@ -63,6 +63,8 @@ function gecerliUrl(u: string): URL | null {
   }
 }
 
+let sonKaynakDurum = 0;
+
 async function kaynakGetir(hedef: string, range: string | null): Promise<{ res: Response; url: string } | null> {
   for (const ua of KAYNAK_UALARI) {
     let adres = hedef;
@@ -74,6 +76,7 @@ async function kaynakGetir(hedef: string, range: string | null): Promise<{ res: 
         headers: { "User-Agent": ua, Accept: "*/*", ...(range ? { Range: range } : {}) },
         redirect: "manual",
       });
+      sonKaynakDurum = res.status;
       const konum = res.headers.get("location");
       if (res.status >= 300 && res.status < 400 && konum) {
         await res.body?.cancel();
@@ -92,11 +95,17 @@ async function kaynakGetir(hedef: string, range: string | null): Promise<{ res: 
 
 const TASINAN_BASLIKLAR = ["content-range", "accept-ranges", "content-length"];
 
+function izinliOrigin(req: Request, env: Env): string {
+  const istek = req.headers.get("Origin") ?? "";
+  if (istek === env.WEB_ORIGIN) return istek;
+  return /^https:\/\/[a-z0-9-]+-burakcinar1908-9090s-projects\.vercel\.app$/.test(istek) ? istek : env.WEB_ORIGIN;
+}
+
 export default {
   async fetch(req: Request, env: Env): Promise<Response> {
     const url = new URL(req.url);
     const cors: Record<string, string> = {
-      "Access-Control-Allow-Origin": env.WEB_ORIGIN,
+      "Access-Control-Allow-Origin": izinliOrigin(req, env),
       "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
       "Access-Control-Allow-Headers": "Range",
       "Access-Control-Expose-Headers": "Content-Length, Content-Range, Accept-Ranges",
@@ -119,8 +128,12 @@ export default {
       return new Response("Bağlantının süresi doldu. Sayfayı yenileyin.", { status: 403, headers: cors });
     }
 
+    sonKaynakDurum = 0;
     const sonuc = await kaynakGetir(yuk.u, req.headers.get("Range"));
-    if (!sonuc) return new Response("Yayın kaynağına ulaşılamadı.", { status: 502, headers: cors });
+    if (!sonuc) {
+      const mesaj = sonKaynakDurum ? "Yayın kaynağı HTTP " + sonKaynakDurum + " döndü." : "Kaynak adresi geçersiz ya da engelli.";
+      return new Response(mesaj, { status: 502, headers: cors });
+    }
 
     const tip = (sonuc.res.headers.get("content-type") ?? "").toLowerCase();
     const liste = sonuc.url.split("?")[0].toLowerCase();
