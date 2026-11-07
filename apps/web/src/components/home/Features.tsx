@@ -12,7 +12,7 @@ export default function Features() {
         <h2 className="text-4xl md:text-5xl">Neden bu platform?</h2>
         <dl className="divide-y divide-[var(--border)] border-y border-[var(--border)]">
           {OZELLIKLER.map((o) => (
-            <div key={o.baslik} className="py-6">
+            <div key={o.baslik} className="gorunur py-6">
               <dt className="text-xl font-medium">{o.baslik}</dt>
               <dd className="mt-2 max-w-[60ch] text-[var(--muted)]">{o.metin}</dd>
             </div>

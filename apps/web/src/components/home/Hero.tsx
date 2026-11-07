@@ -30,11 +30,11 @@ export default function Hero() {
   return (
     <section className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-16 md:grid-cols-[1.1fr_1fr] md:py-24">
       <div>
-        <h1 className="text-6xl md:text-8xl">Canlı yayın, tek ekranda.</h1>
-        <p className="mt-6 max-w-[34ch] text-lg text-[var(--muted)]">
+        <h1 className="giris giris-1 text-6xl md:text-8xl">Canlı yayın, tek ekranda.</h1>
+        <p className="giris giris-2 mt-6 max-w-[34ch] text-lg text-[var(--muted)]">
           Paketinize dahil kanalları ülkeye ve türe göre bulun, favorilerinize ekleyin ve telefonda ya da bilgisayarda izleyin.
         </p>
-        <div className="mt-8 flex flex-wrap gap-3">
+        <div className="giris giris-3 mt-8 flex flex-wrap gap-3">
           <a href="/kanallar" className="btn-primary">
             Kanalları aç
           </a>
