@@ -61,7 +61,8 @@ export default function SahneKaydirma() {
     };
 
     const ciz = (p: number) => {
-      ctx.fillStyle = BG;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "rgba(13, 43, 51, 0.55)";
       ctx.fillRect(0, 0, w, h);
 
       // 1. test kalıbı: aşağıdan yükselir, sonra solar
@@ -126,6 +127,7 @@ export default function SahneKaydirma() {
     const basla = () => {
       boyut();
       if (azalt.matches) {
+        sec.querySelector("video")?.pause();
         ciz(1);
         txt.style.opacity = "1";
         txt.style.transform = "none";
@@ -151,6 +153,16 @@ export default function SahneKaydirma() {
   return (
     <section ref={bolum} aria-label="Kanal geçişi" className="relative h-[260vh]">
       <div className="sticky top-0 h-screen overflow-hidden">
+        <video
+          src="/sahne-arka-plan.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
         <canvas ref={tuval} aria-hidden="true" className="absolute inset-0" />
         <div
           ref={yazi}
