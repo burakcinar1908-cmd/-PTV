@@ -37,7 +37,6 @@ export default function SahneKaydirma() {
     if (!sec || !canvas || !txt) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    const vid = sec.querySelector("video");
 
     let w = 0;
     let h = 0;
@@ -62,12 +61,7 @@ export default function SahneKaydirma() {
     };
 
     const ciz = (p: number) => {
-      if (vid && Number.isFinite(vid.duration)) {
-        const t = p * vid.duration;
-        if (Math.abs(vid.currentTime - t) > 0.03) vid.currentTime = t;
-      }
-      ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = "rgba(13, 43, 51, 0.55)";
+      ctx.fillStyle = BG;
       ctx.fillRect(0, 0, w, h);
 
       // 1. test kalıbı: aşağıdan yükselir, sonra solar
@@ -148,9 +142,7 @@ export default function SahneKaydirma() {
     };
 
     basla();
-    vid?.addEventListener("loadeddata", planla);
     return () => {
-      vid?.removeEventListener("loadeddata", planla);
       window.removeEventListener("scroll", planla);
       window.removeEventListener("resize", yenidenBoyut);
       if (raf) cancelAnimationFrame(raf);
@@ -160,14 +152,6 @@ export default function SahneKaydirma() {
   return (
     <section ref={bolum} aria-label="Kanal geçişi" className="relative h-[260vh]">
       <div className="sticky top-0 h-screen overflow-hidden">
-        <video
-          src="/sahne-arka-plan.mp4"
-          muted
-          playsInline
-          preload="auto"
-          aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-contain bg-[var(--bg)]"
-        />
         <canvas ref={tuval} aria-hidden="true" className="absolute inset-0" />
         <div
           ref={yazi}
