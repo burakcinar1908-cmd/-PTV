@@ -166,7 +166,7 @@ export default function SahneKaydirma() {
           playsInline
           preload="auto"
           aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-contain bg-[var(--bg)]"
         />
         <canvas ref={tuval} aria-hidden="true" className="absolute inset-0" />
         <div
