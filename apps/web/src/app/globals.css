@@ -93,6 +93,39 @@ details[open] > summary .faq-arti {
   animation: ekran-ac 300ms ease-out both;
 }
 
+/* Hero girişi: başlık, metin ve butonlar test ekranından sonra sırayla gelir. */
+@keyframes yukari {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.giris {
+  animation: yukari 500ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.giris-1 {
+  animation-delay: 150ms;
+}
+.giris-2 {
+  animation-delay: 250ms;
+}
+.giris-3 {
+  animation-delay: 350ms;
+}
+
+/* Kaydırmayla açılan satırlar. Desteklemeyen tarayıcıda satırlar zaten görünür kalır. */
+@supports (animation-timeline: view()) {
+  .gorunur {
+    animation: yukari linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 35%;
+  }
+}
+
 /* İşlevsel döngü: yayın hazırlanırken gösterilir, anlam metinle de verilir. */
 @keyframes don {
   to {
